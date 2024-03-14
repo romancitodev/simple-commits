@@ -6,6 +6,7 @@ pub struct Emoji {
     pub name: String,
 }
 
+#[derive(Clone)]
 pub struct Commit<'c> {
     pub emoji: char,
     pub label: &'c str,
@@ -131,3 +132,10 @@ pub const COMMIT_TYPES: [Commit; 9] = [
         "A code change that improves performance",
     ),
 ];
+
+impl<'c> std::fmt::Display for Commit<'c> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let Self { emoji, label, hint } = self;
+        writeln!(f, "{emoji} {label} ({hint})")
+    }
+}
