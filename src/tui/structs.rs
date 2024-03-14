@@ -1,3 +1,5 @@
+use inquire::{autocompletion::Replacement, Autocomplete};
+
 pub struct Emoji {
     pub emoji: String,
     pub description: String,
@@ -8,6 +10,72 @@ pub struct Commit<'c> {
     pub emoji: char,
     pub label: &'c str,
     pub hint: &'c str,
+}
+
+pub struct Scopes {
+    scopes: Option<Vec<String>>,
+}
+
+#[derive(Clone)]
+pub struct ScopesAutoComplete {
+    scopes: Vec<String>,
+}
+
+impl Scopes {
+    pub fn exists(&self, scope: &str) -> bool {
+        let Some(scopes) = &self.scopes else {
+            return false;
+        };
+        scopes
+            .iter()
+            .any(|s| s.to_lowercase().trim() == scope.to_lowercase().trim())
+    }
+
+    pub fn add_scope(&mut self, scope: String) {
+        let mut scopes = self.scopes.clone().unwrap_or_default();
+        scopes.push(scope);
+        self.scopes = Some(scopes);
+    }
+}
+
+impl From<Scopes> for ScopesAutoComplete {
+    fn from(Scopes { scopes }: Scopes) -> Self {
+        Self {
+            scopes: scopes.unwrap_or_default(),
+        }
+    }
+}
+
+impl ScopesAutoComplete {
+    pub fn filter_scopes(&mut self, input: &str) -> Vec<String> {
+        self.scopes
+            .iter()
+            .filter(|s| {
+                s.to_lowercase()
+                    .trim()
+                    .contains(input.to_lowercase().trim())
+            })
+            .cloned()
+            .collect()
+    }
+}
+
+impl Autocomplete for ScopesAutoComplete {
+    fn get_suggestions(&mut self, input: &str) -> Result<Vec<String>, inquire::CustomUserError> {
+        Ok(self.filter_scopes(input))
+    }
+
+    fn get_completion(
+        &mut self,
+        input: &str,
+        highlighted_suggestion: Option<String>,
+    ) -> Result<inquire::autocompletion::Replacement, inquire::CustomUserError> {
+        self.filter_scopes(input);
+        Ok(match highlighted_suggestion {
+            Some(sug) => Replacement::Some(sug),
+            None => Replacement::None,
+        })
+    }
 }
 
 impl<'c> Commit<'c> {
