@@ -46,7 +46,7 @@ impl Settings {
 
     pub fn add_scope(&mut self, scope: &str) {
         if !Path::new(CONFIG_FILENAME).exists() {
-            File::create_new(CONFIG_FILENAME).unwrap();
+            File::create(CONFIG_FILENAME).unwrap();
         }
 
         let mut scopes = self.scopes.clone().unwrap_or_default();
