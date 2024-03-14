@@ -19,6 +19,7 @@ pub struct State {
 #[derive(Debug)]
 pub enum StepError {
     InvalidMsg,
+    NoMsg,
 }
 
 pub type StepResult = Result<(), StepError>;

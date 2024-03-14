@@ -1,4 +1,7 @@
+use std::error::Error;
+
 use inquire::list_option::ListOption;
+use inquire::validator::Validation;
 
 use crate::tui::structs::Emoji;
 
@@ -14,4 +17,14 @@ pub fn format_commits(list: ListOption<&Commit<'_>>) -> String {
     let Commit { label, .. } = list.value;
     let correct = '\u{2705}';
     format!("{label} | {correct}")
+}
+
+pub fn valid_length<'t>(text: &'t str) -> Result<Validation, Box<dyn Error + Send + Sync>> {
+    if !text.is_empty() {
+        Ok(Validation::Valid)
+    } else {
+        Ok(Validation::Invalid(
+            "Commit must contain 1 letter at least".into(),
+        ))
+    }
 }
