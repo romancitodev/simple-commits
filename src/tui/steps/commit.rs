@@ -1,22 +1,19 @@
 use inquire::Select;
 
-use crate::tui::{helpers::format_commits, structs::COMMIT_TYPES, Step};
+use crate::tui::{helpers::format_commits, structs::COMMIT_TYPES, Step, StepError, StepResult};
 
 #[derive(Default)]
-pub struct CommitStep {
-    _type: String,
-}
+pub struct _Step;
 
-impl Step for CommitStep {
-    fn run(&self, state: &mut crate::tui::State) {
+impl Step for _Step {
+    fn run(&self, state: &mut crate::tui::State) -> StepResult {
         let commit = Select::new("Select a commit:", COMMIT_TYPES.to_vec())
             .with_formatter(&format_commits)
             .prompt();
 
-        if let Ok(commit) = commit {
-            state._type = commit.label.to_string();
-        } else {
-            println!("Error...")
-        }
+        state._type = commit
+            .map(|c| c.label.to_string())
+            .map_err(|_| StepError::InvalidMsg)?;
+        Ok(())
     }
 }
