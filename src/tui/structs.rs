@@ -72,10 +72,7 @@ impl Autocomplete for ScopesAutoComplete {
         highlighted_suggestion: Option<String>,
     ) -> Result<inquire::autocompletion::Replacement, inquire::CustomUserError> {
         self.filter_scopes(input);
-        Ok(match highlighted_suggestion {
-            Some(sug) => Replacement::Some(sug),
-            None => Replacement::None,
-        })
+        Ok(highlighted_suggestion)
     }
 }
 

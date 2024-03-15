@@ -19,7 +19,7 @@ pub fn format_commits(list: ListOption<&Commit<'_>>) -> String {
     format!("{label} | {correct}")
 }
 
-pub fn valid_length<'t>(text: &'t str) -> Result<Validation, Box<dyn Error + Send + Sync>> {
+pub fn valid_length(text: &str) -> Result<Validation, Box<dyn Error + Send + Sync>> {
     if !text.is_empty() {
         Ok(Validation::Valid)
     } else {
