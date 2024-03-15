@@ -13,7 +13,7 @@ impl Step for _Step {
 
         state._type = commit
             .map(|c| c.label.to_string())
-            .map_err(|_| StepError::InvalidMsg)?;
+            .map_err(|_| StepError::NoCommit)?;
         Ok(())
     }
 }

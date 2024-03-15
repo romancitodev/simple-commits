@@ -21,6 +21,7 @@ pub struct State {
 pub enum StepError {
     InvalidMsg,
     NoMsg,
+    NoCommit,
 }
 
 pub type StepResult = Result<(), StepError>;

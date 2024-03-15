@@ -1,5 +1,6 @@
 use super::{State, Step};
 use crate::gen_steps;
+use colored::Colorize;
 
 mod commit;
 mod message;
@@ -12,7 +13,9 @@ pub fn init() {
         let res = step.run(&mut state);
         println!("{state:?}");
         if let Err(err) = res {
-            panic!("Error {err:?}");
+            let msg = format!("❌ Error: {:?}", err);
+            println!("{}", msg.bright_red());
+            std::process::exit(1);
         }
     }
 }
