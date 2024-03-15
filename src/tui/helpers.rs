@@ -3,6 +3,8 @@ use std::error::Error;
 use inquire::list_option::ListOption;
 use inquire::validator::Validation;
 
+type ValidationError = Box<dyn Error + Send + Sync>;
+
 use crate::tui::structs::Emoji;
 
 use crate::tui::structs::Commit;
@@ -19,7 +21,7 @@ pub fn format_commits(list: ListOption<&Commit<'_>>) -> String {
     format!("{label} | {correct}")
 }
 
-pub fn valid_length(text: &str) -> Result<Validation, Box<dyn Error + Send + Sync>> {
+pub fn valid_length(text: &str) -> Result<Validation, ValidationError> {
     if !text.is_empty() {
         Ok(Validation::Valid)
     } else {
