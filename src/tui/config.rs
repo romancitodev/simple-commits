@@ -6,7 +6,7 @@ use inquire::ui::{Attributes, Color, RenderConfig, StyleSheet, Styled};
 pub fn generate_config<'config>() -> RenderConfig<'config> {
     let prefix = Styled::new("").with_fg(Color::White);
     let selected = Styled::new("►").with_fg(Color::DarkGrey);
-    let skipped = Styled::new("*skipepd*").with_fg(Color::DarkGrey);
+    let skipped = Styled::new("*skipped*").with_fg(Color::DarkGrey);
     let option = StyleSheet::empty().with_fg(Color::DarkGrey);
     let selected_option = StyleSheet::empty().with_fg(Color::Grey);
     let msg = StyleSheet::empty()
