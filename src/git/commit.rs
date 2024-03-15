@@ -23,29 +23,29 @@ pub struct CommitBuilder {
 }
 
 impl CommitBuilder {
-    pub fn set_type(self, _type: String) {
+    pub fn set_type(self, _type: String) -> CommitBuilder {
         Self {
             _type: Some(_type),
             ..self
-        };
+        }
     }
-    pub fn set_emoji(self, emoji: String) {
+    pub fn set_emoji(self, emoji: String) -> CommitBuilder {
         Self {
             emoji: Some(emoji),
             ..self
-        };
+        }
     }
-    pub fn set_scope(self, scope: String) {
+    pub fn set_scope(self, scope: String) -> CommitBuilder {
         Self {
             scope: Some(scope),
             ..self
-        };
+        }
     }
-    pub fn set_msg(self, msg: String) {
+    pub fn set_msg(self, msg: String) -> CommitBuilder {
         Self {
             msg: Some(msg),
             ..self
-        };
+        }
     }
 }
 
