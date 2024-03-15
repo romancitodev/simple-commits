@@ -68,10 +68,9 @@ impl Autocomplete for ScopesAutoComplete {
 
     fn get_completion(
         &mut self,
-        input: &str,
+        _: &str,
         highlighted_suggestion: Option<String>,
     ) -> Result<inquire::autocompletion::Replacement, inquire::CustomUserError> {
-        self.filter_scopes(input);
         Ok(highlighted_suggestion)
     }
 }
