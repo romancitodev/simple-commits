@@ -3,6 +3,7 @@ mod helpers;
 mod steps;
 mod structs;
 
+/// initialize the configuration and setup the steps
 pub fn init() {
     let config = config::generate_config();
     inquire::set_global_render_config(config);
@@ -24,22 +25,20 @@ pub enum StepError {
 
 pub type StepResult = Result<(), StepError>;
 
+/// A trait to setup steps along the TUI app.
 pub trait Step {
     fn run(&self, state: &mut State) -> StepResult;
-}
-
-struct Steps<T: Step> {
-    steps: Vec<T>,
 }
 
 #[macro_export]
 macro_rules! gen_steps {
     ($($module:ident),*) => {
         {
-            let mut steps: Vec<Box<dyn Step>> = Vec::new();
-            $(
-                steps.push(Box::new(self::$module::_Step));
-            )*
+            let steps: Vec<Box<dyn Step>> = vec![
+                $(
+                    Box::new(self::$module::_Step),
+                )*
+            ];
             steps
         }
     };
