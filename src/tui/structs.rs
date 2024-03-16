@@ -1,9 +1,17 @@
-use inquire::{autocompletion::Replacement, Autocomplete};
+use colored::Colorize;
+use inquire::Autocomplete;
 
 pub struct Emoji {
     pub emoji: String,
     pub description: String,
     pub name: String,
+}
+
+impl std::fmt::Display for Emoji {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let name = format!("({})", self.name).bright_blue();
+        write!(f, "{} | {} {}", self.emoji, self.description, name)
+    }
 }
 
 #[derive(Clone)]

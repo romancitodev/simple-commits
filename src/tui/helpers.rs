@@ -5,7 +5,7 @@ use inquire::validator::Validation;
 
 type ValidationError = Box<dyn Error + Send + Sync>;
 
-use crate::tui::structs::Emoji;
+use crate::gen::Emoji;
 
 use crate::tui::structs::Commit;
 

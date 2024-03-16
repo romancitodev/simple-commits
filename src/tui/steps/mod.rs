@@ -3,11 +3,12 @@ use crate::gen_steps;
 use colored::Colorize;
 
 mod commit;
+mod emoji;
 mod message;
 
 pub fn init() {
     let mut state = State::default();
-    let steps = gen_steps![commit, message];
+    let steps = gen_steps![commit, emoji, message];
 
     for step in steps {
         let res = step.run(&mut state);

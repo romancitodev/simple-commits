@@ -14,6 +14,7 @@ pub fn init() {
 #[derive(Default, Debug)]
 pub struct State {
     _type: String,
+    emoji: Option<String>,
     msg: String,
 }
 
