@@ -1,5 +1,5 @@
 use super::{State, Step};
-use crate::{config::FileConfig, gen_steps};
+use crate::{config::SimpleCommitsConfig, gen_steps};
 use colored::Colorize;
 
 mod commit;
@@ -9,7 +9,7 @@ mod scopes;
 
 /// TODO: Find the way to obtain the config.
 /// Pass it as parameter or initialize it inside.
-pub fn init(config: &mut FileConfig) -> State {
+pub fn init(config: &mut SimpleCommitsConfig) -> State {
     let mut state = State::default();
     // let mut config = CliConfig::new();
     let steps = gen_steps![commit, emoji, message];
