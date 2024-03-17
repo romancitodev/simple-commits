@@ -1,6 +1,5 @@
-use clap::Parser;
 use inquire::Autocomplete;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone)]
 pub struct Commit<'c> {
@@ -9,9 +8,9 @@ pub struct Commit<'c> {
     pub hint: &'c str,
 }
 
-#[derive(Clone, Deserialize, Parser, Default)]
+#[derive(Clone, Serialize, Deserialize, Default)]
 pub struct Scopes {
-    scopes: Option<Vec<String>>,
+    scopes: Vec<String>,
 }
 
 #[derive(Clone)]
@@ -21,30 +20,23 @@ pub struct ScopesAutoComplete {
 
 impl Scopes {
     pub fn exists(&self, scope: &str) -> bool {
-        let Some(scopes) = &self.scopes else {
-            return false;
-        };
-        scopes
+        self.scopes
             .iter()
             .any(|s| s.to_lowercase().trim() == scope.to_lowercase().trim())
     }
 
-    pub fn scopes(&self) -> Option<Vec<String>> {
+    pub fn scopes(&self) -> Vec<String> {
         self.scopes.clone()
     }
 
     pub fn add_scope(&mut self, scope: String) {
-        let mut scopes = self.scopes.clone().unwrap_or_default();
-        scopes.push(scope);
-        self.scopes = Some(scopes);
+        self.scopes.push(scope);
     }
 }
 
 impl From<Scopes> for ScopesAutoComplete {
     fn from(Scopes { scopes }: Scopes) -> Self {
-        Self {
-            scopes: scopes.unwrap_or_default(),
-        }
+        Self { scopes }
     }
 }
 

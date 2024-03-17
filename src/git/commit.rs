@@ -103,7 +103,7 @@ impl std::fmt::Display for ColoredCommit {
             .bright_blue();
         let scope = scope
             .clone()
-            .map_or(String::new(), |s| format!(" {} ", s.bright_green()));
+            .map_or(String::new(), |s| format!("({})", s.bright_green()));
         write!(f, "{}{scope}:{emoji}{}", _type.bright_cyan(), msg.white())
     }
 }

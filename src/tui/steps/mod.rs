@@ -7,12 +7,9 @@ mod emoji;
 mod message;
 mod scopes;
 
-/// TODO: Find the way to obtain the config.
-/// Pass it as parameter or initialize it inside.
 pub fn init(config: &mut SimpleCommitsConfig) -> State {
     let mut state = State::default();
-    // let mut config = CliConfig::new();
-    let steps = gen_steps![commit, emoji, message];
+    let steps = gen_steps![commit, scopes, emoji, message];
 
     for step in steps {
         let res = step.run(&mut state, config);
