@@ -1,18 +1,6 @@
-use colored::Colorize;
+use clap::Parser;
 use inquire::Autocomplete;
-
-pub struct Emoji {
-    pub emoji: String,
-    pub description: String,
-    pub name: String,
-}
-
-impl std::fmt::Display for Emoji {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let name = format!("({})", self.name).bright_blue();
-        write!(f, "{} | {} {}", self.emoji, self.description, name)
-    }
-}
+use serde::Deserialize;
 
 #[derive(Clone)]
 pub struct Commit<'c> {
@@ -21,6 +9,7 @@ pub struct Commit<'c> {
     pub hint: &'c str,
 }
 
+#[derive(Clone, Deserialize, Parser, Default)]
 pub struct Scopes {
     scopes: Option<Vec<String>>,
 }
@@ -38,6 +27,10 @@ impl Scopes {
         scopes
             .iter()
             .any(|s| s.to_lowercase().trim() == scope.to_lowercase().trim())
+    }
+
+    pub fn scopes(&self) -> Option<Vec<String>> {
+        self.scopes.clone()
     }
 
     pub fn add_scope(&mut self, scope: String) {

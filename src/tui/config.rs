@@ -3,7 +3,7 @@ use inquire::ui::{Attributes, Color, RenderConfig, StyleSheet, Styled};
 /// Generates the config for the TUI
 ///
 /// Returns a [`RenderConfig`] from the inquire TUI.
-pub fn generate_config<'config>() -> RenderConfig<'config> {
+pub fn generate_tui_config<'config>() -> RenderConfig<'config> {
     let prefix = Styled::new("").with_fg(Color::White);
     let selected = Styled::new("►").with_fg(Color::DarkGrey);
     let skipped = Styled::new("*skipped*").with_fg(Color::DarkGrey);

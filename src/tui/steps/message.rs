@@ -1,12 +1,15 @@
 use inquire::Text;
 
-use crate::tui::{helpers::valid_length, Step, StepError, StepResult};
+use crate::{
+    config::FileConfig,
+    tui::{helpers::valid_length, Step, StepError, StepResult},
+};
 
 #[derive(Default)]
 pub struct _Step;
 
 impl Step for _Step {
-    fn run(&self, state: &mut crate::tui::State) -> StepResult {
+    fn run(&self, state: &mut crate::tui::State, _: &mut FileConfig) -> StepResult {
         let msg = Text::new("Commit message:")
             .with_validator(valid_length)
             .prompt();

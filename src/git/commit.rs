@@ -6,10 +6,10 @@ pub trait Builder<T> {
 
 #[derive(Clone)]
 pub struct Commit {
-    _type: String,
-    emoji: Option<String>,
-    scope: Option<String>,
-    msg: String,
+    pub _type: String,
+    pub emoji: Option<String>,
+    pub scope: Option<String>,
+    pub msg: String,
 }
 
 pub struct ColoredCommit(Commit);
@@ -104,6 +104,6 @@ impl std::fmt::Display for ColoredCommit {
         let scope = scope
             .clone()
             .map_or(String::new(), |s| format!(" {} ", s.bright_green()));
-        write!(f, "{emoji}{scope}:{emoji}{}", msg.bright_yellow())
+        write!(f, "{}{scope}:{emoji}{}", _type.bright_cyan(), msg.white())
     }
 }

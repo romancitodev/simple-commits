@@ -1,1 +1,1 @@
-mod commit;
+pub mod commit;

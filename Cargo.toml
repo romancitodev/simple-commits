@@ -4,8 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+clap = { version = "4.5.3", features = ["derive"] }
+clap_derive = { version = "4.0.0-rc.1" }
 colored = "2.1.0"
+directories = "5.0.1"
 inquire = "0.7.1"
+merge2 = "0.3.0"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["rt", "macros", "sync", "rt-multi-thread"] }
 toml = "0.8.8"
