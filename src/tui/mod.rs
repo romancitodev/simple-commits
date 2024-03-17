@@ -1,5 +1,5 @@
 use crate::{
-    config::{get_config, FileConfig},
+    config::{get_config, SimpleCommitsConfig},
     git::commit::{ColoredCommit, Commit},
 };
 
@@ -55,7 +55,7 @@ pub type StepResult = Result<(), StepError>;
 
 /// A trait to setup steps along the TUI app.
 pub trait Step {
-    fn run(&self, state: &mut State, config: &mut FileConfig) -> StepResult;
+    fn run(&self, state: &mut State, config: &mut SimpleCommitsConfig) -> StepResult;
 }
 
 #[macro_export]

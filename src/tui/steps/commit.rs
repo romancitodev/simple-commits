@@ -1,7 +1,7 @@
 use inquire::Select;
 
 use crate::{
-    config::FileConfig,
+    config::SimpleCommitsConfig,
     tui::{helpers::format_commits, structs::COMMIT_TYPES, Step, StepError, StepResult},
 };
 
@@ -9,7 +9,7 @@ use crate::{
 pub struct _Step;
 
 impl Step for _Step {
-    fn run(&self, state: &mut crate::tui::State, _: &mut FileConfig) -> StepResult {
+    fn run(&self, state: &mut crate::tui::State, _: &mut SimpleCommitsConfig) -> StepResult {
         let commit = Select::new("Select a commit:", COMMIT_TYPES.to_vec())
             .with_formatter(&format_commits)
             .prompt();

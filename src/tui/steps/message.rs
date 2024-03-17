@@ -1,7 +1,7 @@
 use inquire::Text;
 
 use crate::{
-    config::FileConfig,
+    config::SimpleCommitsConfig,
     tui::{helpers::valid_length, Step, StepError, StepResult},
 };
 
@@ -9,7 +9,7 @@ use crate::{
 pub struct _Step;
 
 impl Step for _Step {
-    fn run(&self, state: &mut crate::tui::State, _: &mut FileConfig) -> StepResult {
+    fn run(&self, state: &mut crate::tui::State, _: &mut SimpleCommitsConfig) -> StepResult {
         let msg = Text::new("Commit message:")
             .with_validator(valid_length)
             .prompt();

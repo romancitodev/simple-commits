@@ -1,6 +1,6 @@
 use inquire::Select;
 
-use crate::config::FileConfig;
+use crate::config::SimpleCommitsConfig;
 use crate::gen::EMOJIS;
 use crate::tui::{helpers::format_emojis, Step, StepError, StepResult};
 
@@ -8,7 +8,7 @@ use crate::tui::{helpers::format_emojis, Step, StepError, StepResult};
 pub struct _Step;
 
 impl Step for _Step {
-    fn run(&self, state: &mut crate::tui::State, _: &mut FileConfig) -> StepResult {
+    fn run(&self, state: &mut crate::tui::State, _: &mut SimpleCommitsConfig) -> StepResult {
         let emoji = Select::new("Select an emoji (optional):", EMOJIS.to_vec())
             .with_formatter(&format_emojis)
             .prompt_skippable();
