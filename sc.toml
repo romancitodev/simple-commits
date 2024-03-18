@@ -1,0 +1,11 @@
+scopes = [
+    "app",
+    "lib",
+    "shared",
+    "tools",
+    "api",
+    "handler",
+]
+
+[git]
+skip_preview = false

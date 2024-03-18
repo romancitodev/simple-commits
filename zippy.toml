@@ -1,5 +1,0 @@
-scopes = [
-    "app",
-    "lib",
-    "crate",
-]
