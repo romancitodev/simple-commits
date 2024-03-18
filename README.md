@@ -1,7 +1,9 @@
 # Simple commits
 
 <div align="center">
-    [![Check CI](https://github.com/romancitodev/simple-commits/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/romancitodev/simple-commits/actions/workflows/checks.yml)
+
+[![Check CI](https://github.com/romancitodev/simple-commits/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/romancitodev/simple-commits/actions/workflows/checks.yml)
+
 </div>
 
 A little CLI written in rust to improve your dirty commits into **conventional** ones.
