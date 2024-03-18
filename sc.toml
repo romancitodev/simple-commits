@@ -5,7 +5,6 @@ scopes = [
     "tools",
     "api",
     "handler",
-    "",
 ]
 
 [git]
