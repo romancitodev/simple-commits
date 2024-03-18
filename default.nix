@@ -67,8 +67,10 @@ in
   };
   # `nix develop`
   devShells.default = cranixLib.devShell {
-    packages = [
+    packages = with pkgs; [
       toolchain
+      cargo-release
+      cargo-dist
     ] ++ deps.buildInputs;
   };
 }
