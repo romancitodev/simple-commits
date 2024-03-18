@@ -69,6 +69,7 @@ in
   devShells.default = cranixLib.devShell {
     packages = with pkgs; [
       toolchain
+      cargo-release
       cargo-dist
     ] ++ deps.buildInputs;
   };
