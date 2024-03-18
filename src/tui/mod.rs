@@ -1,7 +1,4 @@
-use crate::{
-    config::{get_config, SimpleCommitsConfig},
-    git::commit::{ColoredCommit, Commit},
-};
+use crate::config::{get_config, SimpleCommitsConfig};
 
 pub mod config;
 pub mod helpers;
@@ -9,38 +6,24 @@ pub mod steps;
 pub mod structs;
 
 use config as tui_config;
+
+use self::steps::ExecType;
+
 /// initialize the configuration and setup the steps
 pub fn init() {
     let render_config = tui_config::generate_tui_config();
     inquire::set_global_render_config(render_config);
     let mut config = get_config();
-    let State {
-        _type,
-        emoji,
-        scope,
-        msg,
-    } = steps::init(&mut config);
-
-    let commit = Commit {
-        _type,
-        emoji,
-        scope,
-        msg,
-    };
-
-    // git::commit(commit);
-
-    let colored: ColoredCommit = commit.into();
-
-    println!("{colored}");
+    steps::init(&mut config);
 }
 
-#[derive(Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct State {
-    _type: String,
-    scope: Option<String>,
-    emoji: Option<String>,
-    msg: String,
+    pub _type: String,
+    pub scope: Option<String>,
+    pub emoji: Option<String>,
+    pub msg: String,
+    pub exec_type: Option<ExecType>,
 }
 
 #[derive(Debug)]
