@@ -39,6 +39,23 @@ pub struct SimpleCommitsConfig {
     #[serde(flatten)]
     #[merge(strategy = swap_option)]
     pub scopes: Option<Scopes>,
+
+    #[clap(flatten)]
+    #[merge(strategy = swap_option)]
+    pub git: Option<GitConfig>,
+}
+
+/// Configs to run git commands
+#[derive(Clone, Default, Serialize, Deserialize, Parser, Merge)]
+pub struct GitConfig {
+    /// Confirm before to run git commit
+    #[clap(long, short)]
+    pub skip_preview: bool,
+
+    /// Command to run after generate commit message
+    #[clap(long, short)]
+    #[merge(strategy = swap_option)]
+    pub commit_template: Option<Vec<String>>,
 }
 
 impl SimpleCommitsConfig {
