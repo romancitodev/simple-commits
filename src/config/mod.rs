@@ -76,7 +76,7 @@ pub fn get_config() -> SimpleCommitsConfig {
     let config_path = args.config.unwrap_or_else(|| {
         let path = BaseDirs::new().unwrap().config_dir().join("sc");
         // create directory if not exists
-        let _res = std::fs::create_dir_all(path.clone()).unwrap();
+        _ = std::fs::create_dir_all(path.clone()).unwrap();
         path.join("config.toml")
     });
 

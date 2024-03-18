@@ -25,10 +25,6 @@ impl Scopes {
             .any(|s| s.to_lowercase().trim() == scope.to_lowercase().trim())
     }
 
-    pub fn scopes(&self) -> Vec<String> {
-        self.scopes.clone()
-    }
-
     pub fn add_scope(&mut self, scope: String) {
         self.scopes.push(scope);
     }
@@ -71,18 +67,6 @@ impl Autocomplete for ScopesAutoComplete {
 impl<'c> Commit<'c> {
     pub const fn new(emoji: char, label: &'c str, hint: &'c str) -> Commit<'c> {
         Self { emoji, label, hint }
-    }
-
-    pub fn label(&self) -> &str {
-        self.label
-    }
-
-    pub fn hint(&self) -> &str {
-        self.hint
-    }
-
-    pub fn emoji(&self) -> char {
-        self.emoji
     }
 }
 

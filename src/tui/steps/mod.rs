@@ -1,5 +1,4 @@
 use super::{State, Step};
-use crate::git::commit::ColoredCommit;
 use crate::{config::SimpleCommitsConfig, gen_steps};
 use colored::Colorize;
 
@@ -25,16 +24,13 @@ pub fn init(config: &mut SimpleCommitsConfig) {
     }
 
     match state.exec_type {
-        Some(ExecType::Message(msg)) => println!("{msg}"),
+        Some(ExecType::Message(msg)) => println!("Preview of your commit:\n> {msg}"),
         Some(ExecType::Command(cmd, args)) => {
             std::process::Command::new(cmd)
                 .args(&args[..])
                 .spawn()
                 .unwrap();
         }
-        _ => {
-            let commit: ColoredCommit = state.clone().into();
-            println!("{commit}")
-        }
+        _ => {}
     }
 }

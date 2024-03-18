@@ -79,7 +79,7 @@ impl std::fmt::Display for Commit {
             scope,
             msg,
         } = self;
-        let emoji = emoji.clone().map_or(String::new(), |e| format!(" {e} "));
+        let emoji = emoji.clone().map_or(" ".into(), |e| format!(" {e} "));
         let scope = scope.clone().map_or(String::new(), |s| format!("({s})"));
         write!(f, "{_type}{scope}:{emoji}{msg}")
     }
@@ -118,7 +118,7 @@ impl std::fmt::Display for ColoredCommit {
         } = self.0.clone();
         let emoji = emoji
             .clone()
-            .map_or(String::new(), |e| format!(" {e} "))
+            .map_or(" ".into(), |e| format!(" {e} "))
             .bright_blue();
         let scope = scope
             .clone()
