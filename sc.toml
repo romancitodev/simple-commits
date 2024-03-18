@@ -1,0 +1,3 @@
+[git]
+skip_preview = false
+commit_template = ["git", "commit", "-m", "'{{message}}'"]
