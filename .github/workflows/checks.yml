@@ -8,6 +8,9 @@ on:
       - main
     paths:
       - "src/**/**.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
 
 jobs:
   check-fmt:
