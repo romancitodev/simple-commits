@@ -52,6 +52,10 @@ pub struct GitConfig {
     #[clap(long, short)]
     pub skip_preview: bool,
 
+    /// Confirm before to run git commit
+    #[clap(long, short)]
+    pub skip_emojis: bool,
+
     /// Command to run after generate commit message
     #[clap(long, short)]
     #[merge(strategy = swap_option)]
