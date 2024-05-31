@@ -1,7 +1,16 @@
 [package]
 name = "simple-commits"
+description = "A little CLI written in rust to improve your dirty commits into conventional ones. "
+repository = "https://github.com/romancitodev/simple-commits"
+authors = ["romancitodev"]
 version = "0.1.0"
 edition = "2021"
+
+[package.metadata.wix]
+upgrade-guid = "C20E12CB-E616-45DF-8B01-11541D65C6CE"
+path-guid = "E4D36954-1F3E-4535-A0BA-B439FA323671"
+license = false
+eula = false
 
 [dependencies]
 clap = { version = "4.5.3", features = ["derive"] }
@@ -13,3 +22,25 @@ merge2 = "0.3.0"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["rt", "macros", "sync", "rt-multi-thread"] }
 toml = "0.8.8"
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+# Config for 'cargo dist'
+[workspace.metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.8.2"
+# CI backends to support
+ci = ["github"]
+# The installers to generate for each app
+installers = ["shell", "powershell", "homebrew", "msi"]
+# A GitHub repo to push Homebrew formulas to
+tap = "romancitodev/homebrew-tap"
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
+# Publish jobs to run in CI
+publish-jobs = ["homebrew"]
+# Publish jobs to run in CI
+pr-run-mode = "plan"
