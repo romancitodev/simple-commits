@@ -50,11 +50,11 @@ pub struct SimpleCommitsConfig {
 pub struct GitConfig {
     /// Confirm before to run git commit
     #[clap(long, short)]
-    pub skip_preview: bool,
+    pub preview_skip: bool,
 
     /// Confirm before to run git commit
     #[clap(long, short)]
-    pub skip_emojis: bool,
+    pub emojis_skip: bool,
 
     /// Command to run after generate commit message
     #[clap(long, short)]
