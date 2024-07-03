@@ -9,3 +9,4 @@ scopes = [
 
 [git]
 skip_preview = false
+skip_emojis = false

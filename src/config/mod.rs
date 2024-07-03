@@ -49,11 +49,11 @@ pub struct SimpleCommitsConfig {
 #[derive(Clone, Default, Serialize, Deserialize, Parser, Merge)]
 pub struct GitConfig {
     /// Confirm before to run git commit
-    #[clap(long, short)]
+    #[arg(short = 'p', long = "skip-preview")]
     pub skip_preview: bool,
 
     /// Confirm before to run git commit
-    #[clap(long, short)]
+    #[arg(short = 'e', long = "skip-emojis")]
     pub skip_emojis: bool,
 
     /// Command to run after generate commit message
