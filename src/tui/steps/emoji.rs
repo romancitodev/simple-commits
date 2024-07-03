@@ -13,7 +13,7 @@ impl Step for _Step {
         if config
             .git
             .as_ref()
-            .is_some_and(|git_cfg| git_cfg.emojis_skip)
+            .is_some_and(|git_cfg| git_cfg.skip_emojis)
         {
             return Ok(());
         }

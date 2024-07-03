@@ -45,9 +45,9 @@ scopes = ["app", "lib", "docs"]
 [git]
 # By default the skip preview flag is setted to false because we know
 # It's a dangerous action.
-preview_skip = true
+skip_preview = true
 
-emoji_skip = true
+skip_emoji = true
 
 # Customize your commit template as you want
 commit_template = ["git", "commit", "-m", "{{message}}", "&&", "git", "push"]

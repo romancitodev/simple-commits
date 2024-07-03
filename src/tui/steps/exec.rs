@@ -39,7 +39,7 @@ impl Step for _Step {
             let cmd = command
                 .first()
                 .expect("The commit template cannot be empty");
-            if git.preview_skip {
+            if git.skip_preview {
                 state.exec_type = Some(ExecType::Command(cmd.clone(), (command[1..]).to_vec()));
                 return Ok(());
             }

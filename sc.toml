@@ -8,5 +8,5 @@ scopes = [
 ]
 
 [git]
-preview_skip = false
-emojis_skip = false
+skip_preview = false
+skip_emojis = false
