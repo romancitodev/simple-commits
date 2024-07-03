@@ -7,8 +7,8 @@
 </div>
 
 A little CLI written in rust to improve your dirty commits into **conventional** ones.
-## 👀 Demo _(coming soon)_
 
+## 👀 Demo _(coming soon)_
 
 ## ✨ Features
 
@@ -16,7 +16,6 @@ A little CLI written in rust to improve your dirty commits into **conventional**
 - Auto-commit
 - Custom templates
 - Written in rust
-
 
 ## 📥 Installation _(not available yet)_
 
@@ -26,15 +25,15 @@ Install it using cargo!
 cargo install simple-commits
 ```
 
-    
 ## 🛠 Configuration
 
 in your `~/$CONFIG_FOLDER` create a `sc` directory with a `config.toml` inside.
 
->   [!TIP]
->   ```bash
->   mkdir ~/$CONFIG_FOLDER/sc && touch ~/$CONFIG_FOLDER/sc/config.toml
->   ```
+> [!TIP]
+>
+> ```bash
+> mkdir ~/$CONFIG_FOLDER/sc && touch ~/$CONFIG_FOLDER/sc/config.toml
+> ```
 
 and use this template to configure it as you want.
 
@@ -52,6 +51,7 @@ skip_emoji = true
 # Customize your commit template as you want
 commit_template = ["git", "commit", "-m", "{{message}}", "&&", "git", "push"]
 ```
+
 ## 💻 Usage
 
 To use it you just need to run one command. 😍
@@ -62,8 +62,9 @@ sc
 
 or if you prefer to want to use flags:
 
-| flags | Description |
-| ----- | ----------- |
-| `-s` \| `--skip-preview` | ⚠️ Skips the preview step (Dangerous) |
+| flags                       | Description                                  |
+| --------------------------- | -------------------------------------------- |
+| `-p` \| `--skip-preview`    | ⚠️ Skips the preview step (Dangerous)        |
+| `-e` \| `--skip-emoji`      | Skips the emoji step                         |
 | `-c` \| `--commit-template` | Command to run after generate commit message |
-| `--config` | Set the config path |
+| `--config`                  | Set the config path                          |
