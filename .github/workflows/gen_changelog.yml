@@ -1,0 +1,36 @@
+name: Release Changelog
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - ".github/"
+      - "release.toml"
+      - "LICENS**"
+      - "README.md"
+    tags:
+      - "**"
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate a Changelog
+        uses: orhun/git-cliff-action@v3
+        id: git-cliff
+        with:
+          args: -vv --latest
+        env:
+          OUTPUT: CHANGES.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: ${{ contains(github.ref_name, 'a') }}
+          body: ${{ steps.git-cliff.outputs.content }}
