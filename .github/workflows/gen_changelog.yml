@@ -1,0 +1,30 @@
+name: Release Changelog
+
+permissions:
+  contents: write
+
+on:
+  # Defining workflow_call means that this workflow can be called from
+  # your main workflow job
+  workflow_call:
+    # cargo-dist exposes the plan from the plan step, as a JSON string,
+    # to your job if it needs it
+    inputs:
+      plan:
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate a Changelog
+        uses: orhun/git-cliff-action@v3
+        id: git-cliff
+        with:
+          args: -vv --latest
+        env:
+          OUTPUT: CHANGES.md
+          GITHUB_REPO: ${{ github.repository }}
