@@ -4,15 +4,15 @@ permissions:
   contents: write
 
 on:
-  workflow_dispatch:
-  push:
-    paths-ignore:
-      - ".github/"
-      - "release.toml"
-      - "LICENS**"
-      - "README.md"
-    tags:
-      - "**"
+  # Defining workflow_call means that this workflow can be called from
+  # your main workflow job
+  workflow_call:
+    # cargo-dist exposes the plan from the plan step, as a JSON string,
+    # to your job if it needs it
+    inputs:
+      plan:
+        required: true
+        type: string
 
 jobs:
   publish:
@@ -28,9 +28,3 @@ jobs:
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
-
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          prerelease: ${{ contains(github.ref_name, 'a') }}
-          body: ${{ steps.git-cliff.outputs.content }}
