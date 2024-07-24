@@ -26,12 +26,12 @@ let
   # fenix: rustup replacement for reproducible builds
   toolchain = fenix.${system}.fromToolchainFile {
     file = ./rust-toolchain.toml;
-    sha256 = "sha256-opUgs6ckUQCyDxcB9Wy51pqhd0MPGHUVbwRKKPGiwZU=";
+    sha256 = "sha256-Ngiz76YP4HTY75GGdH2P+APE/DEIx2R/Dn+BwwOyzZU=";
   };
   # crane: cargo and artifacts manager
   craneLib = crane.${system}.overrideToolchain toolchain;
   # cranix: extends crane building system with workspace bin building and Mold + Cranelift integrations
-  cranixLib = craneLib.overrideScope' (cranix.${system}.craneOverride);
+  cranixLib = craneLib.overrideScope (cranix.${system}.craneOverride);
 
   deps = {
     buildInputs = with pkgs; [
