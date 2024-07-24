@@ -3,7 +3,7 @@ name = "simple-commit"
 description = "A little CLI written in rust to improve your dirty commits into conventional ones. "
 repository = "https://github.com/romancitodev/simple-commits"
 authors = ["romancitodev"]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 
