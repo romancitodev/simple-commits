@@ -5,6 +5,7 @@ repository = "https://github.com/romancitodev/simple-commits"
 authors = ["romancitodev"]
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 
 [[bin]]
 name = "sc"
