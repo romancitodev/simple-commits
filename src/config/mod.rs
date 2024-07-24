@@ -6,7 +6,7 @@ use std::env::current_dir;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::tui::structs::Scopes;
+use crate::tui::structs::Scope;
 
 mod handle_config;
 
@@ -38,7 +38,7 @@ pub struct SimpleCommitsConfig {
     #[clap(skip)]
     #[serde(flatten)]
     #[merge(strategy = swap_option)]
-    pub scopes: Option<Scopes>,
+    pub scopes: Option<Scope>,
 
     #[clap(flatten)]
     #[merge(strategy = swap_option)]
@@ -80,7 +80,7 @@ pub fn get_config() -> SimpleCommitsConfig {
     let config_path = args.config.unwrap_or_else(|| {
         let path = BaseDirs::new().unwrap().config_dir().join("sc");
         // create directory if not exists
-        _ = std::fs::create_dir_all(path.clone()).unwrap();
+        std::fs::create_dir_all(path.clone()).unwrap();
         path.join("config.toml")
     });
 
@@ -107,4 +107,8 @@ pub fn get_config() -> SimpleCommitsConfig {
     // Merge arguments to loaded config
     config.merge(&mut args.sc_config);
     config
+}
+
+pub fn start_logging() {
+    env_logger::init();
 }

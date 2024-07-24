@@ -9,6 +9,7 @@ mod message;
 mod scopes;
 
 pub use exec::ExecType;
+use log::info;
 
 pub fn init(config: &mut SimpleCommitsConfig) {
     let mut state = State::default();
@@ -19,8 +20,9 @@ pub fn init(config: &mut SimpleCommitsConfig) {
         if let Err(err) = res {
             let msg = format!("❌ Error: {:?}", err);
             println!("{}", msg.bright_red());
-            std::process::exit(1);
+            return;
         }
+        info!(target: "tui::steps", "steps: {state:#?}");
     }
 
     match state.exec_type {

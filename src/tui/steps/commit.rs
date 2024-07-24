@@ -16,7 +16,7 @@ impl Step for _Step {
 
         state._type = commit
             .map(|c| c.label.to_string())
-            .map_err(|_| StepError::NoCommit)?;
+            .map_err(StepError::NoCommit)?;
         Ok(())
     }
 }

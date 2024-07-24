@@ -17,14 +17,7 @@ impl Step for _Step {
             .with_autocomplete(autocomplete)
             .prompt_skippable();
 
-        state.scope = scope.map_err(|_| StepError::NoCommit).and_then(|scope| {
-            if scope.clone().is_some_and(|s| s.len() != 0) {
-                Ok(scope)
-            } else {
-                Ok(None)
-            }
-        })?;
-
+        state.scope = scope.map_err(StepError::NoCommit).unwrap_or_default();
         let scope = state.scope.clone();
 
         if let Some(scope) = scope {

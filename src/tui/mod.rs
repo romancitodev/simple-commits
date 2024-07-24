@@ -6,6 +6,7 @@ pub mod steps;
 pub mod structs;
 
 use config as tui_config;
+use inquire::InquireError;
 
 use self::steps::ExecType;
 
@@ -30,7 +31,7 @@ pub struct State {
 pub enum StepError {
     InvalidMsg,
     NoMsg,
-    NoCommit,
+    NoCommit(InquireError),
     InvalidEmoji,
 }
 

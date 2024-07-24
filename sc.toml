@@ -1,11 +1,26 @@
-scopes = [
-    "app",
-    "lib",
-    "shared",
-    "tools",
-    "api",
-    "handler",
-]
+[[scopes]]
+name = "app"
+description = "Some description"
+
+[[scopes]]
+name = "lib"
+description = "<replace>"
+
+[[scopes]]
+name = "shared"
+description = "<replace>"
+
+[[scopes]]
+name = "tools"
+description = "<replace>"
+
+[[scopes]]
+name = "api"
+description = "<replace>"
+
+[[scopes]]
+name = "handler"
+description = "<replace>"
 
 [git]
 skip_preview = false
