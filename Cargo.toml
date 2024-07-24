@@ -1,10 +1,14 @@
 [package]
-name = "sc"
+name = "simple-commit"
 description = "A little CLI written in rust to improve your dirty commits into conventional ones. "
 repository = "https://github.com/romancitodev/simple-commits"
 authors = ["romancitodev"]
 version = "0.1.0"
 edition = "2021"
+
+[[bin]]
+name = "sc"
+path = "src/main.rs"
 
 [package.metadata.wix]
 upgrade-guid = "C20E12CB-E616-45DF-8B01-11541D65C6CE"

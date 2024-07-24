@@ -618,23 +618,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "719b953e2095829ee67db738b3bfa9fa368c94900df327b3f07fe6e794d2fe1f"
 
 [[package]]
-name = "sc"
-version = "0.1.0"
-dependencies = [
- "clap",
- "clap_derive",
- "colored",
- "directories",
- "env_logger",
- "inquire",
- "log",
- "merge2",
- "serde",
- "tokio",
- "toml",
-]
-
-[[package]]
 name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -697,6 +680,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9e9e0b4211b72e7b8b6e85c807d36c212bdb33ea8587f7569562a84df5465b1"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "simple-commit"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "clap_derive",
+ "colored",
+ "directories",
+ "env_logger",
+ "inquire",
+ "log",
+ "merge2",
+ "serde",
+ "tokio",
+ "toml",
 ]
 
 [[package]]
