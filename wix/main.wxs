@@ -60,7 +60,7 @@
 
     <Product
         Id='*'
-        Name='simple-commits'
+        Name='simple-commit'
         UpgradeCode='C20E12CB-E616-45DF-8B01-11541D65C6CE'
         Manufacturer='romancitodev'
         Language='1033'
@@ -83,11 +83,11 @@
             DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.'/>
 
         <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1'/>
-        <Property Id='DiskPrompt' Value='simple-commits Installation'/>
+        <Property Id='DiskPrompt' Value='simple-commit Installation'/>
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
             <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
-                <Directory Id='APPLICATIONFOLDER' Name='simple-commits'>
+                <Directory Id='APPLICATIONFOLDER' Name='simple-commit'>
                     
                     <!--
                       Enabling the license sidecar file in the installer is a four step process:
@@ -123,9 +123,9 @@
                         <Component Id='binary0' Guid='*'>
                             <File
                                 Id='exe0'
-                                Name='simple-commits.exe'
+                                Name='sc.exe'
                                 DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\simple-commits.exe'
+                                Source='$(var.CargoTargetBinDir)\sc.exe'
                                 KeyPath='yes'/>
                         </Component>
                     </Directory>
