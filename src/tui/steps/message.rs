@@ -1,25 +1,30 @@
-use inquire::Text;
+use promptuity::prompts::Input;
 
 use crate::{
     config::SimpleCommitsConfig,
-    tui::{helpers::valid_length, Step, StepError, StepResult},
+    tui::{helpers::valid_length, Step, StepResult},
 };
 
 #[derive(Default)]
 pub struct _Step;
 
 impl Step for _Step {
-    fn run(&self, state: &mut crate::tui::State, _: &mut SimpleCommitsConfig) -> StepResult {
-        let msg = Text::new("Commit message:")
-            .with_validator(valid_length)
-            .prompt();
-        match msg {
-            Ok(msg) if !msg.is_empty() => {
-                state.msg = msg;
-                Ok(())
-            }
-            Ok(_) => Err(StepError::NoMsg),
-            Err(_) => Err(StepError::InvalidMsg),
-        }
+    fn run(
+        &self,
+        p: &mut promptuity::Promptuity<std::io::Stderr>,
+        state: &mut crate::tui::State,
+        _: &mut SimpleCommitsConfig,
+    ) -> StepResult {
+        let msg = p.prompt(Input::new("Enter the commit message").with_validator(
+            |text: &String| {
+                valid_length(
+                    text,
+                    5,
+                    "The commit message must have at least 5 characters",
+                )
+            },
+        ))?;
+        state.msg = msg;
+        Ok(())
     }
 }
