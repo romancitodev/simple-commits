@@ -22,6 +22,9 @@ description = "<replace>"
 name = "handler"
 description = "<replace>"
 
+[[scopes]]
+name = "crab"
+
 [git]
 skip_preview = false
 skip_emojis = false

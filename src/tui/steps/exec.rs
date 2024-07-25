@@ -1,4 +1,7 @@
-use inquire::Confirm;
+use std::io::Stderr;
+
+use promptuity::prompts::Confirm;
+use promptuity::Promptuity;
 
 use crate::git::commit::{ColoredCommit, Commit};
 use crate::{
@@ -6,17 +9,42 @@ use crate::{
     tui::{Step, StepResult},
 };
 
+#[allow(dead_code)]
 #[derive(Clone, Debug)]
-pub enum ExecType {
-    Message(String),
-    Command(String, Vec<String>),
+pub enum Action {
+    DryRun(String),
+    Commit(String, Vec<String>),
+}
+
+impl Action {
+    /// Returns the execute action of this [`Action`].
+    ///
+    /// # Panics
+    ///
+    /// Panics if .
+    pub fn execute_action(&self) {
+        match self {
+            Self::DryRun(msg) => println!("{msg}"),
+            Self::Commit(cmd, args) => {
+                std::process::Command::new(cmd)
+                    .args(&args[..])
+                    .spawn()
+                    .unwrap();
+            }
+        }
+    }
 }
 
 #[derive(Default)]
 pub struct _Step;
 
 impl Step for _Step {
-    fn run(&self, state: &mut crate::tui::State, config: &mut SimpleCommitsConfig) -> StepResult {
+    fn run(
+        &self,
+        p: &mut Promptuity<Stderr>,
+        state: &mut crate::tui::State,
+        config: &mut SimpleCommitsConfig,
+    ) -> StepResult {
         let commit: Commit = state.clone().into();
         let mut command = vec![
             "git".to_string(),
@@ -40,23 +68,26 @@ impl Step for _Step {
                 .first()
                 .expect("The commit template cannot be empty");
             if git.skip_preview {
-                state.exec_type = Some(ExecType::Command(cmd.clone(), (command[1..]).to_vec()));
+                state.exec_type = Some(Action::Commit(cmd.clone(), (command[1..]).to_vec()));
                 return Ok(());
             }
         }
 
-        let execute = Confirm::new(&format!("Command to run: {}", commit))
-            .with_default(true)
-            .with_help_message("Do you want run these command?")
-            .prompt()
-            .is_ok_and(|c| c);
-
+        let execute =
+            p.prompt(Confirm::new("Do you want to execute this command?").with_default(true))?;
         if !execute {
             let commit: ColoredCommit = state.clone().into();
-            state.exec_type = Some(ExecType::Message(commit.to_string()));
-            return Ok(());
-        }
-        state.exec_type = Some(ExecType::Command(cmd.clone(), (command[1..]).to_vec()));
+            p.step("Commit preview")?;
+            p.log(commit.to_string())?;
+        } else {
+            state.exec_type = Some(Action::Commit(cmd.clone(), (command[1..]).to_vec()));
+
+            state
+                .exec_type
+                .as_ref()
+                .expect("At this point the exec type is filled")
+                .execute_action();
+        };
 
         Ok(())
     }

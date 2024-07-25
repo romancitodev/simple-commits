@@ -110,5 +110,7 @@ pub fn get_config() -> SimpleCommitsConfig {
 }
 
 pub fn start_logging() {
-    env_logger::init();
+    env_logger::builder()
+        // .filter_level(log::LevelFilter::Trace)
+        .init();
 }

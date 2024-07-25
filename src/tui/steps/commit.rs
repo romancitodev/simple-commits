@@ -1,22 +1,32 @@
-use inquire::Select;
+use std::io::Stderr;
 
+use promptuity::{prompts::SelectOption, Promptuity};
+
+use crate::tui::widgets::Autocomplete;
 use crate::{
     config::SimpleCommitsConfig,
-    tui::{helpers::format_commits, structs::COMMIT_TYPES, Step, StepError, StepResult},
+    tui::{structs::COMMIT_TYPES, Step, StepResult},
 };
 
 #[derive(Default)]
 pub struct _Step;
 
 impl Step for _Step {
-    fn run(&self, state: &mut crate::tui::State, _: &mut SimpleCommitsConfig) -> StepResult {
-        let commit = Select::new("Select a commit:", COMMIT_TYPES.to_vec())
-            .with_formatter(&format_commits)
-            .prompt();
+    fn run(
+        &self,
+        p: &mut Promptuity<Stderr>,
+        state: &mut crate::tui::State,
+        _: &mut SimpleCommitsConfig,
+    ) -> StepResult {
+        let commit = p.prompt(&mut Autocomplete::new(
+            "Select a type",
+            COMMIT_TYPES
+                .map(|c| SelectOption::new(c.clone(), c.label.to_owned()).with_hint(c.hint))
+                .to_vec(),
+            true,
+        ));
 
-        state._type = commit
-            .map(|c| c.label.to_string())
-            .map_err(StepError::NoCommit)?;
+        state._type = String::from(commit?);
         Ok(())
     }
 }
