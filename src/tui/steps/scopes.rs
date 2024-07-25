@@ -22,7 +22,7 @@ impl Step for _Step {
             .iter()
             .map(|scope| {
                 SelectOption::new(scope.name(), scope.name().to_owned())
-                    .with_hint(scope.description().clone().unwrap_or(String::new()))
+                    .with_hint(scope.description().clone().unwrap_or_default())
             })
             .collect::<Vec<_>>();
         let scope = p.prompt(&mut Autocomplete::new(
@@ -31,7 +31,7 @@ impl Step for _Step {
             false,
         ))?;
 
-        let scope = (!scope.is_empty()).then(|| scope);
+        let scope = (!scope.is_empty()).then_some(scope);
         state.scope = scope.clone();
 
         if let Some(scope) = scope {

@@ -21,12 +21,12 @@ impl Step for _Step {
         let commit = p.prompt(&mut Autocomplete::new(
             "Select a type",
             COMMIT_TYPES
-                .map(|c| SelectOption::new(c.clone(), c.label.to_owned()).with_hint(c.hint))
+                .map(|c| SelectOption::new(c, c.label.to_owned()).with_hint(c.hint))
                 .to_vec(),
             true,
         ));
 
-        state._type = String::from(commit?);
+        state._type = commit?;
         Ok(())
     }
 }
