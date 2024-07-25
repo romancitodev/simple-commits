@@ -264,10 +264,21 @@ jobs:
 
           gh release create "${{ needs.plan.outputs.tag }}" --target "$RELEASE_COMMIT" $PRERELEASE_FLAG --title "$ANNOUNCEMENT_TITLE" --notes-file "$RUNNER_TEMP/notes.txt" artifacts/*
 
+  custom-gen_changelog:
+    needs:
+      - plan
+      - build-local-artifacts
+      - build-global-artifacts
+    uses: ./.github/workflows/gen_changelog.yml
+    with:
+      plan: ${{ needs.plan.outputs.val }}
+    secrets: inherit
+
   publish-homebrew-formula:
     needs:
       - plan
       - host
+      - custom-gen_changelog
     runs-on: "ubuntu-20.04"
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -309,6 +320,7 @@ jobs:
       - plan
       - host
       - publish-homebrew-formula
+      - custom-gen_changelog
     # use "always() && ..." to allow us to wait for all publish jobs while
     # still allowing individual publish jobs to skip themselves (for prereleases).
     # "host" however must run to completion, no skipping allowed!
