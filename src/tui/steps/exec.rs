@@ -69,6 +69,11 @@ impl Step for _Step {
                 .expect("The commit template cannot be empty");
             if git.skip_preview {
                 state.exec_type = Some(Action::Commit(cmd.clone(), (command[1..]).to_vec()));
+                state
+                    .exec_type
+                    .as_ref()
+                    .expect("At this point the exec type is filled")
+                    .execute_action();
                 return Ok(());
             }
         }
