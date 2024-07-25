@@ -2,7 +2,7 @@ use promptuity::prompts::SelectOption;
 
 use crate::config::SimpleCommitsConfig;
 use crate::gen::EMOJIS;
-use crate::tui::widgets::Autocomplete;
+use crate::tui::widgets::{Autocomplete, AutocompletePriority};
 use crate::tui::{Step, StepResult};
 
 #[derive(Default)]
@@ -29,8 +29,9 @@ impl Step for _Step {
             .to_vec();
         let emoji = p.prompt(&mut Autocomplete::new(
             "Select an emoji (optional)",
-            emojis_mapped,
             false,
+            AutocompletePriority::Hint,
+            emojis_mapped,
         ))?;
         state.emoji = Some(emoji);
         Ok(())

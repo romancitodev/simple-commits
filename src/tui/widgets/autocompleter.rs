@@ -5,24 +5,42 @@ use promptuity::pagination::paginate;
 use promptuity::prompts::{DefaultSelectFormatter, SelectFormatter, SelectOption};
 use promptuity::style::*;
 use promptuity::{Error, InputCursor, Prompt, PromptBody, PromptInput, PromptState, RenderPayload};
+
 pub struct Autocomplete {
     formatter: DefaultSelectFormatter,
     message: String,
     page_size: usize,
     options: Vec<SelectOption<String>>,
-    filtered_options: Vec<usize>,
+    filtered_options: Vec<(usize, i64)>,
     index: usize,
     input: InputCursor,
     matcher: SkimMatcherV2,
+    priority: AutocompletePriority,
     strict: bool,
     skip: bool,
+}
+
+#[derive(Clone, Copy)]
+pub enum AutocompletePriority {
+    Hint,
+    Label,
+}
+
+impl From<AutocompletePriority> for (i64, i64) {
+    fn from(value: AutocompletePriority) -> (i64, i64) {
+        match value {
+            AutocompletePriority::Hint => (1, 4),
+            AutocompletePriority::Label => (4, 1),
+        }
+    }
 }
 
 impl Autocomplete {
     pub fn new(
         message: impl std::fmt::Display,
-        options: Vec<SelectOption<String>>,
         strict: bool,
+        priority: AutocompletePriority,
+        options: Vec<SelectOption<String>>,
     ) -> Self {
         Self {
             formatter: DefaultSelectFormatter::new(),
@@ -33,6 +51,7 @@ impl Autocomplete {
             index: 0,
             input: InputCursor::default(),
             matcher: SkimMatcherV2::default(),
+            priority,
             strict,
             skip: false,
         }
@@ -40,6 +59,7 @@ impl Autocomplete {
 
     fn run_filter(&mut self) {
         let pattern = self.input.value();
+        let (priority_label, priority_hint): (i64, i64) = self.priority.into();
 
         self.filtered_options = self
             .options
@@ -48,11 +68,30 @@ impl Autocomplete {
             .filter_map(|(i, option)| {
                 let label = &option.label;
                 let hint = option.hint.clone().unwrap_or_default();
-                self.matcher
-                    .fuzzy_match(&format!("{label} {hint}"), &pattern)
-                    .map(|_| i)
+                let a = self
+                    .matcher
+                    .fuzzy_match(label, &pattern)
+                    .unwrap_or_default();
+                let b = self
+                    .matcher
+                    .fuzzy_match(&hint, &pattern)
+                    .unwrap_or_default();
+
+                let c = (a.saturating_mul(priority_label))
+                    .saturating_add(b.saturating_mul(priority_hint))
+                    .saturating_sub(i as i64);
+
+                log::trace!("{pattern} -> {label}; {a} & {b} = {c}");
+                if c <= 0 && !pattern.is_empty() {
+                    return None;
+                }
+
+                Some((i, c))
             })
             .collect::<Vec<_>>();
+
+        self.filtered_options.sort_by_key(|(_, s)| *s);
+        self.filtered_options.reverse();
 
         self.index = std::cmp::min(self.filtered_options.len().saturating_sub(1), self.index);
     }
@@ -60,7 +99,7 @@ impl Autocomplete {
     fn current_option(&self) -> Option<&SelectOption<String>> {
         self.filtered_options
             .get(self.index)
-            .and_then(|idx| self.options.get(*idx))
+            .and_then(|(idx, _)| self.options.get(*idx))
     }
 }
 
@@ -78,7 +117,7 @@ impl Prompt for Autocomplete {
             return Err(Error::Config("options cannot be empty.".into()));
         }
 
-        self.filtered_options = (0..self.options.len()).collect();
+        self.filtered_options = (0..self.options.len()).map(|i| (i, 0)).collect();
 
         Ok(())
     }
@@ -197,7 +236,7 @@ impl Prompt for Autocomplete {
                     .items
                     .iter()
                     .enumerate()
-                    .map(|(i, idx)| {
+                    .map(|(i, (idx, _))| {
                         let option = self.options.get(*idx).unwrap();
                         let active = i == page.cursor;
                         self.formatter.option(

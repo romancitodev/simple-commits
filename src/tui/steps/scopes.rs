@@ -3,7 +3,10 @@ use promptuity::prompts::SelectOption;
 
 use crate::{
     config::SimpleCommitsConfig,
-    tui::{widgets::Autocomplete, Step, StepResult},
+    tui::{
+        widgets::{Autocomplete, AutocompletePriority},
+        Step, StepResult,
+    },
 };
 
 #[derive(Default)]
@@ -27,8 +30,9 @@ impl Step for _Step {
             .collect::<Vec<_>>();
         let scope = p.prompt(&mut Autocomplete::new(
             "Select an scope",
-            mapped_scopes,
             false,
+            AutocompletePriority::Label,
+            mapped_scopes,
         ))?;
 
         let scope = (!scope.is_empty()).then_some(scope);
