@@ -32,7 +32,7 @@ impl Step for _Step {
         ))?;
 
         let scope = (!scope.is_empty()).then_some(scope);
-        state.scope = scope.clone();
+        state.scope.clone_from(&scope);
 
         if let Some(scope) = scope {
             if let Some(scopes) = &mut config.scopes {
