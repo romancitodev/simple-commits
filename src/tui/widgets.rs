@@ -1,3 +1,3 @@
 mod autocompleter;
 
-pub use autocompleter::Autocomplete;
+pub use autocompleter::{Autocomplete, AutocompletePriority};

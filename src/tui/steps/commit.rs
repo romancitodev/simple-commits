@@ -2,7 +2,7 @@ use std::io::Stderr;
 
 use promptuity::{prompts::SelectOption, Promptuity};
 
-use crate::tui::widgets::Autocomplete;
+use crate::tui::widgets::{Autocomplete, AutocompletePriority};
 use crate::{
     config::SimpleCommitsConfig,
     tui::{structs::COMMIT_TYPES, Step, StepResult},
@@ -20,10 +20,11 @@ impl Step for _Step {
     ) -> StepResult {
         let commit = p.prompt(&mut Autocomplete::new(
             "Select a type",
+            true,
+            AutocompletePriority::Label,
             COMMIT_TYPES
                 .map(|c| SelectOption::new(c, c.label.to_owned()).with_hint(c.hint))
                 .to_vec(),
-            true,
         ));
 
         state._type = commit?;
