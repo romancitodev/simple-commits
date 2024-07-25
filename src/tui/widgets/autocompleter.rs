@@ -114,7 +114,8 @@ impl Prompt for Autocomplete {
 
     fn setup(&mut self) -> Result<(), Error> {
         if self.options.is_empty() {
-            return Err(Error::Config("options cannot be empty.".into()));
+            self.filtered_options = Vec::new();
+            return Ok(());
         }
 
         self.filtered_options = (0..self.options.len()).map(|i| (i, 0)).collect();

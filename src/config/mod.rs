@@ -1,8 +1,7 @@
-use clap::Parser;
-use directories::BaseDirs;
+use clap::{Parser, Subcommand};
+use handle_config as helpers;
 use merge2::Merge;
 use serde::{Deserialize, Serialize};
-use std::env::current_dir;
 use std::fs;
 use std::path::PathBuf;
 
@@ -17,6 +16,18 @@ pub fn swap_option<T>(left: &mut Option<T>, right: &mut Option<T>) {
     }
 }
 
+#[derive(Subcommand, Clone, Copy, Debug)]
+pub enum InitOptions {
+    Global,
+    Local,
+}
+
+#[derive(Subcommand, Clone, Copy, Debug)]
+pub enum Command {
+    #[clap(subcommand)]
+    Init(InitOptions),
+}
+
 #[derive(Parser)]
 /// Cli config settings.
 pub struct CliConfig {
@@ -25,6 +36,9 @@ pub struct CliConfig {
 
     #[clap(flatten)]
     sc_config: SimpleCommitsConfig,
+
+    #[command(subcommand)]
+    mode: Option<Command>,
 }
 
 /// File settings for customizing the bin.
@@ -33,7 +47,7 @@ pub struct SimpleCommitsConfig {
     #[merge(skip)]
     #[serde(skip)]
     #[clap(skip)]
-    config: PathBuf,
+    pub config: PathBuf,
 
     #[clap(skip)]
     #[serde(flatten)]
@@ -70,43 +84,27 @@ impl SimpleCommitsConfig {
     }
 }
 
-pub fn get_config() -> SimpleCommitsConfig {
+pub fn get_config() -> (SimpleCommitsConfig, Option<Command>) {
     let mut args = CliConfig::parse();
     let mut config = SimpleCommitsConfig::default();
 
-    // load custom path if exists or load global config
-    // check if the config path was provided.
+    match args.mode {
+        Some(Command::Init(option)) => {
+            let path = helpers::create_config(option);
+            config.config = path;
+        }
+        _ => {
+            let (global_path, local_path) = helpers::get_config(args.config, &mut config);
 
-    let config_path = args.config.unwrap_or_else(|| {
-        let path = BaseDirs::new().unwrap().config_dir().join("sc");
-        // create directory if not exists
-        std::fs::create_dir_all(path.clone()).unwrap();
-        path.join("config.toml")
-    });
-
-    // Load Global
-    if let Ok(cfg_content) = std::fs::read_to_string(&config_path) {
-        let mut g_config: SimpleCommitsConfig = toml::from_str(&cfg_content).unwrap();
-        config.merge(&mut g_config);
-        config.config = config_path;
+            if let Some(local_path) = local_path {
+                config.config = local_path;
+            } else {
+                config.config = global_path;
+            }
+            config.merge(&mut args.sc_config);
+        }
     }
-
-    let config_path = current_dir()
-        .expect("Cannot get current directory")
-        .join("sc.toml");
-
-    // Load Local
-    // TODO: make recursive search root path
-    // The idea is find `.git` folder and use that as root path
-    if let Ok(cfg_content) = std::fs::read_to_string(&config_path) {
-        let mut l_config: SimpleCommitsConfig = toml::from_str(&cfg_content).unwrap();
-        config.merge(&mut l_config);
-        config.config = config_path;
-    }
-
-    // Merge arguments to loaded config
-    config.merge(&mut args.sc_config);
-    config
+    (config, args.mode)
 }
 
 pub fn start_logging() {

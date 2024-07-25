@@ -13,6 +13,6 @@ where
 {
     Promptuity::new(term, theme)
 }
-pub fn generate_config() -> (Term<std::io::Stderr>, FancyTheme) {
+pub fn prepare() -> (Term<std::io::Stderr>, FancyTheme) {
     (Term::default(), FancyTheme::default())
 }

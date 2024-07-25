@@ -1,6 +1,6 @@
 use std::io::Stderr;
 
-use super::{State, Step};
+use super::State;
 use crate::{config::SimpleCommitsConfig, gen_steps};
 use colored::Colorize;
 

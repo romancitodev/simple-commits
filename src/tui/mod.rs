@@ -3,6 +3,7 @@ use std::io::Stderr;
 use crate::config::{get_config, SimpleCommitsConfig};
 
 pub mod config;
+pub mod config_prompt;
 pub mod helpers;
 pub mod steps;
 pub mod structs;
@@ -14,10 +15,17 @@ use steps::exec::Action;
 
 /// initialize the configuration and setup the steps
 pub fn init() {
-    let (mut term, mut theme) = tui::generate_config();
+    let (mut term, mut theme) = tui::prepare();
     let mut prompt = tui::generate_prompt(&mut term, &mut theme);
-    let mut config = get_config();
-    let _ = steps::init(&mut prompt, &mut config);
+    let (mut config, command) = get_config();
+    match command {
+        Some(_) => {
+            _ = config_prompt::init(&mut prompt, &mut config);
+        }
+        None => {
+            _ = steps::init(&mut prompt, &mut config);
+        }
+    }
 }
 
 #[derive(Clone, Default, Debug)]
@@ -45,7 +53,7 @@ pub trait Step {
 macro_rules! gen_steps {
     ($($module:ident),*) => {
         {
-            let steps: Vec<Box<dyn Step>> = vec![
+            let steps: Vec<Box<dyn super::Step>> = vec![
                 $(
                     Box::new(self::$module::_Step),
                 )*
