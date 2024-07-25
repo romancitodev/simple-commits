@@ -41,7 +41,7 @@ pub fn get_config(path: Option<PathBuf>, config: &mut SimpleCommitsConfig) -> Co
     let local_path = current_dir();
 
     if let Ok(local_path_ok) = &local_path {
-        if let Ok(content) = std::fs::read_to_string(&local_path_ok) {
+        if let Ok(content) = std::fs::read_to_string(local_path_ok) {
             let mut local_config: SimpleCommitsConfig = toml::from_str(&content).unwrap();
             config.merge(&mut local_config);
         }
