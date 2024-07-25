@@ -17,12 +17,12 @@ A little CLI written in rust to improve your dirty commits into **conventional**
 - Custom templates
 - Written in rust
 
-## 📥 Installation _(not available yet)_
+## 📥 Installation
 
 Install it using cargo!
 
 ```bash
-cargo install simple-commits
+cargo install simple-commit
 ```
 
 ## 🛠 Configuration
@@ -39,7 +39,13 @@ and use this template to configure it as you want.
 
 ```toml
 # The scopes
-scopes = ["app", "lib", "docs"]
+[[scopes]]
+name = "app"
+description = "the app itself"
+
+[[scopes]]
+name = "core"
+description = "the core lib"
 
 [git]
 # By default the skip preview flag is setted to false because we know
