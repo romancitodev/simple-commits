@@ -36,7 +36,7 @@ impl Step for _Step {
         ))?;
 
         let scope = (!scope.is_empty()).then_some(scope);
-        state.scope.clone_from(&scope);
+        state.commit.set_scope(scope.clone());
 
         if let Some(scope) = scope {
             if let Some(scopes) = &mut config.scopes {

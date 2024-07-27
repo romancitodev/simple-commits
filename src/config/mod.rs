@@ -34,6 +34,9 @@ pub struct CliConfig {
     #[clap(long, help = "set custom path to load config.")]
     config: Option<PathBuf>,
 
+    #[clap(short, long)]
+    message: Option<String>,
+
     #[clap(flatten)]
     sc_config: SimpleCommitsConfig,
 
@@ -108,7 +111,5 @@ pub fn get_config() -> (SimpleCommitsConfig, Option<Command>) {
 }
 
 pub fn start_logging() {
-    env_logger::builder()
-        // .filter_level(log::LevelFilter::Trace)
-        .init();
+    env_logger::builder().init();
 }

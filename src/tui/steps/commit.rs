@@ -27,7 +27,7 @@ impl Step for _Step {
                 .to_vec(),
         ));
 
-        state._type = commit?;
+        state.commit.set_type(Some(commit?));
         Ok(())
     }
 }

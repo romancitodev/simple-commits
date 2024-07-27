@@ -3,37 +3,12 @@ use std::io::Stderr;
 use promptuity::prompts::Confirm;
 use promptuity::Promptuity;
 
-use crate::git::commit::{ColoredCommit, Commit};
+use crate::tui::helpers::BLANK_CHARACTER;
+use crate::tui::Action;
 use crate::{
     config::SimpleCommitsConfig,
     tui::{Step, StepResult},
 };
-
-#[allow(dead_code)]
-#[derive(Clone, Debug)]
-pub enum Action {
-    DryRun(String),
-    Commit(String, Vec<String>),
-}
-
-impl Action {
-    /// Returns the execute action of this [`Action`].
-    ///
-    /// # Panics
-    ///
-    /// Panics if .
-    pub fn execute_action(&self) {
-        match self {
-            Self::DryRun(msg) => println!("{msg}"),
-            Self::Commit(cmd, args) => {
-                std::process::Command::new(cmd)
-                    .args(&args[..])
-                    .spawn()
-                    .unwrap();
-            }
-        }
-    }
-}
 
 #[derive(Default)]
 pub struct _Step;
@@ -45,12 +20,12 @@ impl Step for _Step {
         state: &mut crate::tui::State,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
-        let commit: Commit = state.clone().into();
+        let commit = state.commit.clone().build()?;
         let mut command = vec![
             "git".to_string(),
             "commit".to_string(),
             "-m".to_string(),
-            format!("{commit}"),
+            format!("{0}", commit.0),
         ];
         let cmd = command.first().expect("unreachable!").clone();
         if let Some(git) = &config.git {
@@ -59,7 +34,7 @@ impl Step for _Step {
                 .as_ref()
                 .map(|msg| {
                     msg.iter()
-                        .map(|m| m.replace("{{message}}", &format!("{commit}")))
+                        .map(|m| m.replace("{{message}}", &commit.0.to_string()))
                         .collect::<Vec<String>>()
                 })
                 .unwrap_or(command);
@@ -68,12 +43,8 @@ impl Step for _Step {
                 .first()
                 .expect("The commit template cannot be empty");
             if git.skip_preview {
-                state.exec_type = Some(Action::Commit(cmd.clone(), (command[1..]).to_vec()));
-                state
-                    .exec_type
-                    .as_ref()
-                    .expect("At this point the exec type is filled")
-                    .execute_action();
+                state.action = Action::Commit(cmd.clone(), (command[1..]).to_vec());
+                state.action.execute_action();
                 return Ok(());
             }
         }
@@ -81,17 +52,13 @@ impl Step for _Step {
         let execute =
             p.prompt(Confirm::new("Do you want to execute this command?").with_default(true))?;
         if !execute {
-            let commit: ColoredCommit = state.clone().into();
             p.step("Commit preview")?;
-            p.log(commit.to_string())?;
+            p.log(commit.0)?;
+            p.log(BLANK_CHARACTER)?;
         } else {
-            state.exec_type = Some(Action::Commit(cmd.clone(), (command[1..]).to_vec()));
+            state.action = Action::Commit(cmd.clone(), (command[1..]).to_vec());
 
-            state
-                .exec_type
-                .as_ref()
-                .expect("At this point the exec type is filled")
-                .execute_action();
+            state.action.execute_action();
         };
 
         Ok(())

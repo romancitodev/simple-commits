@@ -33,7 +33,10 @@ impl Step for _Step {
             AutocompletePriority::Hint,
             emojis_mapped,
         ))?;
-        state.emoji = Some(emoji);
+
+        let emoji = (!emoji.is_empty()).then_some(emoji);
+        state.commit.set_emoji(emoji);
+
         Ok(())
     }
 }

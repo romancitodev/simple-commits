@@ -1,7 +1,5 @@
 use colored::Colorize;
 
-use crate::tui::State;
-
 #[derive(Clone)]
 pub struct Commit {
     pub _type: String,
@@ -29,23 +27,6 @@ impl std::fmt::Display for Commit {
 impl From<Commit> for ColoredCommit {
     fn from(value: Commit) -> Self {
         ColoredCommit(value)
-    }
-}
-
-impl From<State> for Commit {
-    fn from(value: State) -> Self {
-        Self {
-            _type: value._type,
-            emoji: value.emoji,
-            scope: value.scope,
-            msg: value.msg,
-        }
-    }
-}
-
-impl From<State> for ColoredCommit {
-    fn from(value: State) -> Self {
-        ColoredCommit(value.into())
     }
 }
 
