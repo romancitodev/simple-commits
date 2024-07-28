@@ -6,7 +6,7 @@ use promptuity::Promptuity;
 use crate::tui::helpers::BLANK_CHARACTER;
 use crate::tui::Action;
 use crate::{
-    config::SimpleCommitsConfig,
+    config::cli::SimpleCommitsConfig,
     tui::{Step, StepResult},
 };
 

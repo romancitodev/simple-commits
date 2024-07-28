@@ -1,10 +1,14 @@
-use std::{env::current_dir, path::PathBuf};
-
+use super::cli::{InitOptions, SimpleCommitsConfig};
 use directories::BaseDirs;
 use merge2::Merge;
+use std::{env::current_dir, path::PathBuf};
 
-use super::{InitOptions, SimpleCommitsConfig};
-
+#[inline]
+pub fn swap_option<T>(left: &mut Option<T>, right: &mut Option<T>) {
+    if left.is_none() || right.is_some() {
+        core::mem::swap(left, right);
+    }
+}
 pub fn create_config(option: InitOptions) -> PathBuf {
     match option {
         InitOptions::Global => {
@@ -30,7 +34,7 @@ pub fn create_config(option: InitOptions) -> PathBuf {
 /// (Global, Local)
 type ConfigPaths = (PathBuf, Option<PathBuf>);
 
-pub fn get_config(path: Option<PathBuf>, config: &mut SimpleCommitsConfig) -> ConfigPaths {
+pub fn load_config(path: Option<PathBuf>, config: &mut SimpleCommitsConfig) -> ConfigPaths {
     let global_path = path.unwrap_or(create_config(InitOptions::Global));
 
     if let Ok(content) = std::fs::read_to_string(&global_path) {

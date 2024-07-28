@@ -4,7 +4,7 @@ use promptuity::{prompts::SelectOption, Promptuity};
 
 use crate::tui::widgets::{Autocomplete, AutocompletePriority};
 use crate::{
-    config::SimpleCommitsConfig,
+    config::cli::SimpleCommitsConfig,
     tui::{structs::COMMIT_TYPES, Step, StepResult},
 };
 

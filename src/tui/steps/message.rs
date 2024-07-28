@@ -1,7 +1,7 @@
 use promptuity::prompts::Input;
 
 use crate::{
-    config::SimpleCommitsConfig,
+    config::cli::SimpleCommitsConfig,
     tui::{helpers::valid_length, Step, StepResult},
 };
 

@@ -1,6 +1,6 @@
 use std::io::Stderr;
 
-use crate::config::{get_config, SimpleCommitsConfig};
+use crate::config::{cli::SimpleCommitsConfig, get_config};
 
 pub mod config;
 pub mod config_prompt;

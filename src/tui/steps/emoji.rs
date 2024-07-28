@@ -1,6 +1,6 @@
 use promptuity::prompts::SelectOption;
 
-use crate::config::SimpleCommitsConfig;
+use crate::config::cli::SimpleCommitsConfig;
 use crate::gen::EMOJIS;
 use crate::tui::widgets::{Autocomplete, AutocompletePriority};
 use crate::tui::{Step, StepResult};

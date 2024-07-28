@@ -2,7 +2,7 @@ use log::{debug, error};
 use promptuity::prompts::SelectOption;
 
 use crate::{
-    config::SimpleCommitsConfig,
+    config::cli::SimpleCommitsConfig,
     tui::{
         widgets::{Autocomplete, AutocompletePriority},
         Step, StepResult,

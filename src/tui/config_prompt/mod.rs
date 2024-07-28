@@ -2,7 +2,7 @@ use std::io::Stderr;
 
 use promptuity::{Error, Promptuity};
 
-use crate::config::SimpleCommitsConfig;
+use crate::config::cli::SimpleCommitsConfig;
 
 pub fn init(
     prompt: &mut Promptuity<Stderr>,

@@ -1,7 +1,7 @@
 use std::io::Stderr;
 
 use super::State;
-use crate::{config::SimpleCommitsConfig, gen_steps};
+use crate::{config::cli::SimpleCommitsConfig, gen_steps};
 use colored::Colorize;
 
 pub mod commit;

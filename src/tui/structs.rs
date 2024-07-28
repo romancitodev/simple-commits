@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Default)]
-pub struct Commit<'c> {
+pub struct Commit<'scope> {
     pub emoji: char,
-    pub label: &'c str,
-    pub hint: &'c str,
+    pub label: &'scope str,
+    pub hint: &'scope str,
 }
 
 #[derive(Clone, Serialize, Deserialize, Default)]
@@ -55,8 +55,8 @@ impl std::fmt::Display for InnerScope {
     }
 }
 
-impl<'c> Commit<'c> {
-    pub const fn new(emoji: char, label: &'c str, hint: &'c str) -> Commit<'c> {
+impl<'scope> Commit<'scope> {
+    pub const fn new(emoji: char, label: &'scope str, hint: &'scope str) -> Commit<'scope> {
         Self { emoji, label, hint }
     }
 }
@@ -97,7 +97,7 @@ pub const COMMIT_TYPES: [Commit; 9] = [
     ),
 ];
 
-impl<'c> std::fmt::Display for Commit<'c> {
+impl<'scope> std::fmt::Display for Commit<'scope> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let Self { emoji, label, .. } = self;
         write!(f, "{emoji} {label}")
