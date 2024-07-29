@@ -36,7 +36,7 @@ pub enum InitOptions {
 }
 
 /// File settings for customizing the bin.
-#[derive(Default, Serialize, Deserialize, Parser, Merge)]
+#[derive(Debug, Default, Serialize, Deserialize, Parser, Merge)]
 pub struct SimpleCommitsConfig {
     #[merge(skip)]
     #[serde(skip)]

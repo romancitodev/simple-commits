@@ -4,7 +4,7 @@ use merge2::Merge;
 use serde::{Deserialize, Serialize};
 
 /// Configs to run git commands
-#[derive(Clone, Default, Serialize, Deserialize, Parser, Merge)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
 pub struct GitConfig {
     /// Confirm before to run git commit
     #[arg(short = 'p', long = "skip-preview")]

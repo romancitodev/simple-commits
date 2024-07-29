@@ -16,7 +16,7 @@ impl Step for _Step {
     fn run(
         &self,
         p: &mut promptuity::Promptuity<std::io::Stderr>,
-        state: &mut crate::tui::State,
+        state: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
         let scopes = config.scopes.clone().unwrap_or_default();

@@ -7,7 +7,7 @@ pub struct Commit<'scope> {
     pub hint: &'scope str,
 }
 
-#[derive(Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Scope {
     scopes: Vec<InnerScope>,
 }
