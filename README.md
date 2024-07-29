@@ -24,6 +24,11 @@ Install it using cargo!
 ```bash
 cargo install simple-commit
 ```
+Nixos
+
+```bash
+nix profile install github:romancitodev/simple-commits
+```
 
 ## 🛠 Configuration
 
