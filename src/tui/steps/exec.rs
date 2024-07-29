@@ -6,7 +6,7 @@ use promptuity::Promptuity;
 use crate::tui::helpers::BLANK_CHARACTER;
 use crate::tui::Action;
 use crate::{
-    config::SimpleCommitsConfig,
+    config::cli::SimpleCommitsConfig,
     tui::{Step, StepResult},
 };
 
@@ -17,7 +17,7 @@ impl Step for _Step {
     fn run(
         &self,
         p: &mut Promptuity<Stderr>,
-        state: &mut crate::tui::State,
+        state: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
         let commit = state.commit.clone().build()?;

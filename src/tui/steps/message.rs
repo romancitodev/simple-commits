@@ -1,7 +1,7 @@
 use promptuity::prompts::Input;
 
 use crate::{
-    config::SimpleCommitsConfig,
+    config::cli::SimpleCommitsConfig,
     tui::{helpers::valid_length, Step, StepResult},
 };
 
@@ -12,7 +12,7 @@ impl Step for _Step {
     fn run(
         &self,
         p: &mut promptuity::Promptuity<std::io::Stderr>,
-        state: &mut crate::tui::State,
+        state: &mut crate::tui::AppData,
         _: &mut SimpleCommitsConfig,
     ) -> StepResult {
         let msg = p.prompt(

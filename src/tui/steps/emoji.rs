@@ -1,6 +1,6 @@
 use promptuity::prompts::SelectOption;
 
-use crate::config::SimpleCommitsConfig;
+use crate::config::cli::SimpleCommitsConfig;
 use crate::gen::EMOJIS;
 use crate::tui::widgets::{Autocomplete, AutocompletePriority};
 use crate::tui::{Step, StepResult};
@@ -12,7 +12,7 @@ impl Step for _Step {
     fn run(
         &self,
         p: &mut promptuity::Promptuity<std::io::Stderr>,
-        state: &mut crate::tui::State,
+        state: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
         if config.git.as_ref().is_some_and(|cfg| cfg.skip_emojis) {

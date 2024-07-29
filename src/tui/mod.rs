@@ -1,6 +1,6 @@
 use std::io::Stderr;
 
-use crate::config::{get_config, SimpleCommitsConfig};
+use crate::config::{cli::SimpleCommitsConfig, get_config};
 
 pub mod config;
 pub mod config_prompt;
@@ -28,7 +28,7 @@ pub fn init() {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct State {
+pub struct AppData {
     pub commit: CommitBuilder,
     pub action: Action,
 }
@@ -61,11 +61,30 @@ impl Action {
 pub type StepResult = Result<(), Error>;
 
 /// A trait to setup steps along the TUI app.
+#[allow(dead_code)]
 pub trait Step {
+    fn before_run(
+        &self,
+        _prompt: &mut Promptuity<Stderr>,
+        _state: &mut AppData,
+        _config: &mut SimpleCommitsConfig,
+    ) -> StepResult {
+        Ok(())
+    }
+
+    fn after_run(
+        &self,
+        _prompt: &mut Promptuity<Stderr>,
+        _state: &mut AppData,
+        _config: &mut SimpleCommitsConfig,
+    ) -> StepResult {
+        Ok(())
+    }
+
     fn run(
         &self,
         prompt: &mut Promptuity<Stderr>,
-        state: &mut State,
+        state: &mut AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult;
 }

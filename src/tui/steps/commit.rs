@@ -4,7 +4,7 @@ use promptuity::{prompts::SelectOption, Promptuity};
 
 use crate::tui::widgets::{Autocomplete, AutocompletePriority};
 use crate::{
-    config::SimpleCommitsConfig,
+    config::cli::SimpleCommitsConfig,
     tui::{structs::COMMIT_TYPES, Step, StepResult},
 };
 
@@ -15,7 +15,7 @@ impl Step for _Step {
     fn run(
         &self,
         p: &mut Promptuity<Stderr>,
-        state: &mut crate::tui::State,
+        state: &mut crate::tui::AppData,
         _: &mut SimpleCommitsConfig,
     ) -> StepResult {
         let commit = p.prompt(&mut Autocomplete::new(
