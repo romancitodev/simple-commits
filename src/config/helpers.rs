@@ -39,14 +39,17 @@ pub fn load_config(path: Option<PathBuf>, config: &mut SimpleCommitsConfig) -> C
 
     if let Ok(content) = std::fs::read_to_string(&global_path) {
         let mut global_config: SimpleCommitsConfig = toml::from_str(&content).unwrap();
+        config.config = global_path.clone();
         config.merge(&mut global_config);
     }
 
-    let local_path = current_dir();
+    let local_path = current_dir().map(|path| path.join("sc.toml"));
 
     if let Ok(local_path_ok) = &local_path {
         if let Ok(content) = std::fs::read_to_string(local_path_ok) {
             let mut local_config: SimpleCommitsConfig = toml::from_str(&content).unwrap();
+            log::trace!("{:#?}", config);
+            config.config = local_path_ok.clone();
             config.merge(&mut local_config);
         }
     }
