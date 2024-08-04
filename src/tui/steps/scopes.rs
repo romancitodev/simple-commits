@@ -10,11 +10,11 @@ use crate::{
 };
 
 #[derive(Default)]
-pub struct _Step;
+pub struct Scope;
 
-impl Step for _Step {
+impl Step for Scope {
     fn run(
-        &self,
+        &mut self,
         p: &mut promptuity::Promptuity<std::io::Stderr>,
         state: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
@@ -38,11 +38,12 @@ impl Step for _Step {
         let scope = (!scope.is_empty()).then_some(scope);
         state.commit.set_scope(scope.clone());
 
+        // FIX: Error on global path
         if let Some(scope) = scope {
             if let Some(scopes) = &mut config.scopes {
                 if !scopes.exists(&scope) {
                     debug!(target: "steps::scope", "This shit works");
-                    scopes.add_scope(scope.clone());
+                    scopes.add_scope(scope);
                     if let Err(err) = config.update() {
                         error!(target: "step::scope", "This shit aint work! {}", err);
                     }

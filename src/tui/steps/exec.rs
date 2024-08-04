@@ -11,43 +11,65 @@ use crate::{
 };
 
 #[derive(Default)]
-pub struct _Step;
+pub struct Execute {
+    skip: bool,
+    action: Action,
+    cmd: Vec<String>,
+}
 
-impl Step for _Step {
-    fn run(
-        &self,
-        p: &mut Promptuity<Stderr>,
+impl Step for Execute {
+    fn before_run(
+        &mut self,
+        _: &mut Promptuity<Stderr>,
         state: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
-        let commit = state.commit.clone().build()?;
-        let mut command = vec![
-            "git".to_string(),
-            "commit".to_string(),
-            "-m".to_string(),
-            format!("{0}", commit.0),
-        ];
-        let cmd = command.first().expect("unreachable!").clone();
-        if let Some(git) = &config.git {
-            command = git
-                .commit_template
-                .as_ref()
-                .map(|msg| {
-                    msg.iter()
-                        .map(|m| m.replace("{{message}}", &commit.0.to_string()))
-                        .collect::<Vec<String>>()
-                })
-                .unwrap_or(command);
+        self.skip = config
+            .git
+            .as_ref()
+            .map(|cfg| cfg.skip_preview)
+            .unwrap_or(false);
 
-            let cmd = command
-                .first()
-                .expect("The commit template cannot be empty");
-            if git.skip_preview {
-                state.action = Action::Commit(cmd.clone(), (command[1..]).to_vec());
-                state.action.execute_action();
-                return Ok(());
+        let commit = state.commit.clone().build()?;
+
+        let command = {
+            let base = ["git", "commit", "-m", &commit.0]
+                .iter()
+                .map(|s| String::from(*s))
+                .collect::<Vec<_>>();
+
+            if let Some(cfg) = &config.git {
+                cfg.commit_template.as_ref().map_or_else(
+                    || base,
+                    |cfg| {
+                        cfg.iter()
+                            .map(|msg| msg.replace("{{message}}", &commit.0))
+                            .collect::<Vec<_>>()
+                    },
+                )
+            } else {
+                base
             }
+        };
+
+        self.cmd = command;
+
+        Ok(())
+    }
+
+    fn run(
+        &mut self,
+        p: &mut Promptuity<Stderr>,
+        state: &mut crate::tui::AppData,
+        _: &mut SimpleCommitsConfig,
+    ) -> StepResult {
+        if self.skip {
+            let (head, tail) = self.cmd.split_first().unwrap();
+            self.action = Action::Commit(head.clone(), tail.to_vec());
+            return Ok(());
         }
+
+        let commit = state.commit.clone().build()?;
 
         let execute =
             p.prompt(Confirm::new("Do you want to execute this command?").with_default(true))?;
@@ -56,11 +78,20 @@ impl Step for _Step {
             p.log(commit.0)?;
             p.log(BLANK_CHARACTER)?;
         } else {
-            state.action = Action::Commit(cmd.clone(), (command[1..]).to_vec());
-
-            state.action.execute_action();
+            let (head, tail) = self.cmd.split_first().unwrap();
+            self.action = Action::Commit(head.clone(), tail.to_vec());
         };
 
+        Ok(())
+    }
+
+    fn after_run(
+        &mut self,
+        _: &mut Promptuity<Stderr>,
+        _: &mut crate::tui::AppData,
+        _config: &mut SimpleCommitsConfig,
+    ) -> StepResult {
+        self.action.execute_action();
         Ok(())
     }
 }

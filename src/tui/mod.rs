@@ -30,7 +30,6 @@ pub fn init() {
 #[derive(Clone, Default, Debug)]
 pub struct AppData {
     pub commit: CommitBuilder,
-    pub action: Action,
 }
 
 #[allow(dead_code)]
@@ -61,10 +60,10 @@ impl Action {
 pub type StepResult = Result<(), Error>;
 
 /// A trait to setup steps along the TUI app.
-#[allow(dead_code)]
+
 pub trait Step {
     fn before_run(
-        &self,
+        &mut self,
         _prompt: &mut Promptuity<Stderr>,
         _state: &mut AppData,
         _config: &mut SimpleCommitsConfig,
@@ -73,7 +72,7 @@ pub trait Step {
     }
 
     fn after_run(
-        &self,
+        &mut self,
         _prompt: &mut Promptuity<Stderr>,
         _state: &mut AppData,
         _config: &mut SimpleCommitsConfig,
@@ -82,7 +81,7 @@ pub trait Step {
     }
 
     fn run(
-        &self,
+        &mut self,
         prompt: &mut Promptuity<Stderr>,
         state: &mut AppData,
         config: &mut SimpleCommitsConfig,
@@ -91,11 +90,11 @@ pub trait Step {
 
 #[macro_export]
 macro_rules! gen_steps {
-    ($($module:ident),*) => {
+    ($($struct:ty),*) => {
         {
             let steps: Vec<Box<dyn super::Step>> = vec![
                 $(
-                    Box::new(self::$module::_Step),
+                    Box::new(<$struct>::default()),
                 )*
             ];
             steps

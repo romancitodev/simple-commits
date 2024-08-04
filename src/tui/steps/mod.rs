@@ -18,17 +18,25 @@ pub fn init(
     config: &mut SimpleCommitsConfig,
 ) -> Result<(), Error> {
     let mut state = AppData::default();
-    let steps = gen_steps![commit, scopes, emoji, message, exec];
+    let mut steps = gen_steps![
+        commit::Definition,
+        scopes::Scope,
+        emoji::Emoji,
+        message::Title,
+        exec::Execute
+    ];
 
     prompt.with_intro("Simple Commit").begin()?;
 
-    for step in steps {
+    for step in steps.iter_mut() {
+        let _before = step.before_run(prompt, &mut state, config);
         let res = step.run(prompt, &mut state, config);
         if let Err(err) = res {
             let msg = format!("❌ Error: {:?}", err);
             error!(target: "tui::steps", "{}", msg.bright_red());
             return Err(Error::Prompt(String::from("Error")));
         }
+        let _after = step.after_run(prompt, &mut state, config);
         info!(target: "tui::steps", "steps: {state:#?}");
     }
 

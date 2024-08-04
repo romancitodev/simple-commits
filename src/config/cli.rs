@@ -13,9 +13,6 @@ pub struct CliConfig {
     #[clap(long, help = "set custom path to load config.")]
     pub(super) config: Option<PathBuf>,
 
-    #[clap(short, long)]
-    pub(super) message: Option<String>,
-
     #[clap(flatten)]
     pub(super) sc_config: SimpleCommitsConfig,
 
@@ -42,6 +39,10 @@ pub struct SimpleCommitsConfig {
     #[serde(skip)]
     #[clap(skip)]
     pub config: PathBuf,
+
+    #[clap(short, long)]
+    #[serde(skip)]
+    pub message: Option<String>,
 
     #[clap(skip)]
     #[serde(flatten)]

@@ -6,18 +6,32 @@ use crate::tui::widgets::{Autocomplete, AutocompletePriority};
 use crate::tui::{Step, StepResult};
 
 #[derive(Default)]
-pub struct _Step;
+pub struct Emoji {
+    skip: bool,
+}
 
-impl Step for _Step {
-    fn run(
-        &self,
-        p: &mut promptuity::Promptuity<std::io::Stderr>,
-        state: &mut crate::tui::AppData,
+impl Step for Emoji {
+    fn before_run(
+        &mut self,
+        _: &mut promptuity::Promptuity<std::io::Stderr>,
+        _: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
-        if config.git.as_ref().is_some_and(|cfg| cfg.skip_emojis) {
+    self.skip = config.git.as_ref().is_some_and(|cfg| cfg.skip_emojis);
+
+        Ok(())
+    }
+
+    fn run(
+        &mut self,
+        p: &mut promptuity::Promptuity<std::io::Stderr>,
+        state: &mut crate::tui::AppData,
+        _: &mut SimpleCommitsConfig,
+    ) -> StepResult {
+        if self.skip {
             return Ok(());
         }
+        
         let emojis_mapped = EMOJIS
             .map(|emoji| {
                 SelectOption::new(

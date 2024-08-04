@@ -9,11 +9,11 @@ use crate::{
 };
 
 #[derive(Default)]
-pub struct _Step;
+pub struct Definition;
 
-impl Step for _Step {
+impl Step for Definition {
     fn run(
-        &self,
+        &mut self,
         p: &mut Promptuity<Stderr>,
         state: &mut crate::tui::AppData,
         _: &mut SimpleCommitsConfig,

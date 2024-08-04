@@ -1,5 +1,9 @@
-# Generated automatically by CLI
-
 [[scopes]]
 name = "core"
 description = "the core of the repo"
+
+[[scopes]]
+name = "tools"
+
+[[scopes]]
+name = "cli"

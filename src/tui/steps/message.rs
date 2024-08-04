@@ -6,15 +6,33 @@ use crate::{
 };
 
 #[derive(Default)]
-pub struct _Step;
+pub struct Title {
+    skip: bool,
+    title: Option<String>,
+}
 
-impl Step for _Step {
+impl Step for Title {
+    fn before_run(
+        &mut self,
+        _: &mut promptuity::Promptuity<std::io::Stderr>,
+        _: &mut crate::tui::AppData,
+        config: &mut SimpleCommitsConfig,
+    ) -> StepResult {
+        self.skip = config.message.as_ref().is_some();
+        self.title = config.message.clone();
+        Ok(())
+    }
+
     fn run(
-        &self,
+        &mut self,
         p: &mut promptuity::Promptuity<std::io::Stderr>,
-        state: &mut crate::tui::AppData,
+        _: &mut crate::tui::AppData,
         _: &mut SimpleCommitsConfig,
     ) -> StepResult {
+        if self.skip {
+            return Ok(());
+        }
+
         let msg = p.prompt(
             Input::new("Enter a brief title of the commit").with_validator(|text: &String| {
                 valid_length(
@@ -24,7 +42,17 @@ impl Step for _Step {
                 )
             }),
         )?;
-        state.commit.set_title(Some(msg));
+        self.title = Some(msg);
+        Ok(())
+    }
+
+    fn after_run(
+        &mut self,
+        _: &mut promptuity::Promptuity<std::io::Stderr>,
+        state: &mut crate::tui::AppData,
+        _: &mut SimpleCommitsConfig,
+    ) -> StepResult {
+        state.commit.set_title(self.title.clone());
         Ok(())
     }
 }
