@@ -57,8 +57,11 @@ in
 {
   # `nix run`
   apps = rec {
-    simpleCommits = simpleCommitsPkg.app;
-    default = simpleCommits;
+    simpleCommits = simpleCommitsPkg.pkg;
+    default = {
+      program = "${simpleCommits}/bin/sc";
+      type = "app";
+      };
   };
   # `nix build`
   packages = rec {
