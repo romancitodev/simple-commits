@@ -24,10 +24,7 @@ in
 }:
 let
   # fenix: rustup replacement for reproducible builds
-  toolchain = fenix.${system}.fromToolchainFile {
-    file = ./rust-toolchain.toml;
-    sha256 = "sha256-6eN/GKzjVSjEhGO9FhWObkRFaE1Jf+uqMSdQnb8lcB4=";
-  };
+  toolchain = fenix.${system}.stable.minimalToolchain;
   # crane: cargo and artifacts manager
   craneLib = crane.${system}.overrideToolchain toolchain;
   # cranix: extends crane building system with workspace bin building and Mold + Cranelift integrations
