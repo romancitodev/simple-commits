@@ -1,10 +1,7 @@
-use std::io::Stderr;
-
 use promptuity::prompts::Confirm;
-use promptuity::Promptuity;
 
 use crate::tui::helpers::BLANK_CHARACTER;
-use crate::tui::Action;
+use crate::tui::{Action, Prompt};
 use crate::{
     config::cli::SimpleCommitsConfig,
     tui::{Step, StepResult},
@@ -20,7 +17,7 @@ pub struct Execute {
 impl Step for Execute {
     fn before_run(
         &mut self,
-        _: &mut Promptuity<Stderr>,
+        _: &mut Prompt,
         state: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
@@ -59,7 +56,7 @@ impl Step for Execute {
 
     fn run(
         &mut self,
-        p: &mut Promptuity<Stderr>,
+        p: &mut Prompt,
         state: &mut crate::tui::AppData,
         _: &mut SimpleCommitsConfig,
     ) -> StepResult {
@@ -87,7 +84,7 @@ impl Step for Execute {
 
     fn after_run(
         &mut self,
-        _: &mut Promptuity<Stderr>,
+        _: &mut Prompt,
         _: &mut crate::tui::AppData,
         _config: &mut SimpleCommitsConfig,
     ) -> StepResult {

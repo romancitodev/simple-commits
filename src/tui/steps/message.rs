@@ -2,7 +2,7 @@ use promptuity::prompts::Input;
 
 use crate::{
     config::cli::SimpleCommitsConfig,
-    tui::{helpers::valid_length, Step, StepResult},
+    tui::{helpers::valid_length, Prompt, Step, StepResult},
 };
 
 #[derive(Default)]
@@ -14,7 +14,7 @@ pub struct Title {
 impl Step for Title {
     fn before_run(
         &mut self,
-        _: &mut promptuity::Promptuity<std::io::Stderr>,
+        _: &mut Prompt,
         _: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
@@ -25,7 +25,7 @@ impl Step for Title {
 
     fn run(
         &mut self,
-        p: &mut promptuity::Promptuity<std::io::Stderr>,
+        p: &mut Prompt,
         _: &mut crate::tui::AppData,
         _: &mut SimpleCommitsConfig,
     ) -> StepResult {
@@ -48,7 +48,7 @@ impl Step for Title {
 
     fn after_run(
         &mut self,
-        _: &mut promptuity::Promptuity<std::io::Stderr>,
+        _: &mut Prompt,
         state: &mut crate::tui::AppData,
         _: &mut SimpleCommitsConfig,
     ) -> StepResult {

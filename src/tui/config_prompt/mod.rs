@@ -1,12 +1,12 @@
-use std::io::Stderr;
-
-use promptuity::{Error, Promptuity};
+use promptuity::Error;
 
 use crate::config::cli::SimpleCommitsConfig;
 
+use super::Prompt;
+
 pub fn init(
-    prompt: &mut Promptuity<Stderr>,
-    config: &mut SimpleCommitsConfig,
+    prompt: &mut Prompt,
+    SimpleCommitsConfig { config, .. }: &mut SimpleCommitsConfig,
 ) -> Result<(), Error> {
     prompt.with_intro("Simple Commit").begin()?;
 
@@ -14,7 +14,7 @@ pub fn init(
 
     prompt.log("")?;
     prompt.info("Succesfully created.")?;
-    prompt.log(format!("Path: {:?}", config.config))?;
+    prompt.log(format!("Path: {config:?}"))?;
     prompt.log("")?;
 
     prompt

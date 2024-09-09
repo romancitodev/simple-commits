@@ -5,7 +5,7 @@ use crate::{
     config::cli::SimpleCommitsConfig,
     tui::{
         widgets::{Autocomplete, AutocompletePriority},
-        Step, StepResult,
+        Prompt, Step, StepResult,
     },
 };
 
@@ -15,7 +15,7 @@ pub struct Scope;
 impl Step for Scope {
     fn run(
         &mut self,
-        p: &mut promptuity::Promptuity<std::io::Stderr>,
+        p: &mut Prompt,
         state: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {

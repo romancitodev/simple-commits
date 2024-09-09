@@ -1,8 +1,7 @@
-use std::io::Stderr;
-
-use promptuity::{prompts::SelectOption, Promptuity};
+use promptuity::prompts::SelectOption;
 
 use crate::tui::widgets::{Autocomplete, AutocompletePriority};
+use crate::tui::Prompt;
 use crate::{
     config::cli::SimpleCommitsConfig,
     tui::{structs::COMMIT_TYPES, Step, StepResult},
@@ -14,7 +13,7 @@ pub struct Definition;
 impl Step for Definition {
     fn run(
         &mut self,
-        p: &mut Promptuity<Stderr>,
+        p: &mut Prompt,
         state: &mut crate::tui::AppData,
         _: &mut SimpleCommitsConfig,
     ) -> StepResult {

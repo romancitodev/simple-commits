@@ -1,28 +1,25 @@
-use std::io::Stderr;
-
 use crate::{config::cli::SimpleCommitsConfig, gen_steps};
 use colored::Colorize;
 
+pub mod body;
 pub mod commit;
 pub mod emoji;
 pub mod exec;
 pub mod message;
 pub mod scopes;
 use log::{error, info};
-use promptuity::{Error, Promptuity};
+use promptuity::Error;
 
-use super::AppData;
+use super::{AppData, Prompt};
 
-pub fn init(
-    prompt: &mut Promptuity<Stderr>,
-    config: &mut SimpleCommitsConfig,
-) -> Result<(), Error> {
+pub fn init(prompt: &mut Prompt, config: &mut SimpleCommitsConfig) -> Result<(), Error> {
     let mut state = AppData::default();
     let mut steps = gen_steps![
         commit::Definition,
         scopes::Scope,
         emoji::Emoji,
         message::Title,
+        body::Body,
         exec::Execute
     ];
 

@@ -1,6 +1,8 @@
-use std::io::Stderr;
+use std::io::Stdout;
 
 use crate::config::{cli::SimpleCommitsConfig, get_config};
+
+pub type Prompt<'infer> = promptuity::Promptuity<'infer, Stdout>;
 
 pub mod config;
 pub mod config_prompt;
@@ -10,7 +12,7 @@ pub mod structs;
 pub mod widgets;
 
 use config as tui;
-use promptuity::{Error, Promptuity};
+use promptuity::Error;
 
 /// initialize the configuration and setup the steps
 pub fn init() {
@@ -64,7 +66,7 @@ pub type StepResult = Result<(), Error>;
 pub trait Step {
     fn before_run(
         &mut self,
-        _prompt: &mut Promptuity<Stderr>,
+        _prompt: &mut Prompt,
         _state: &mut AppData,
         _config: &mut SimpleCommitsConfig,
     ) -> StepResult {
@@ -73,7 +75,7 @@ pub trait Step {
 
     fn after_run(
         &mut self,
-        _prompt: &mut Promptuity<Stderr>,
+        _prompt: &mut Prompt,
         _state: &mut AppData,
         _config: &mut SimpleCommitsConfig,
     ) -> StepResult {
@@ -82,7 +84,7 @@ pub trait Step {
 
     fn run(
         &mut self,
-        prompt: &mut Promptuity<Stderr>,
+        prompt: &mut Prompt,
         state: &mut AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult;

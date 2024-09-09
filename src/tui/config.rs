@@ -13,6 +13,6 @@ where
 {
     Promptuity::new(term, theme)
 }
-pub fn prepare() -> (Term<std::io::Stderr>, FancyTheme) {
-    (Term::default(), FancyTheme::default())
+pub fn prepare() -> (Term<std::io::Stdout>, FancyTheme) {
+    (Term::stdout(), FancyTheme::default())
 }

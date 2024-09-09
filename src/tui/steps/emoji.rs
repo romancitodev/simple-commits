@@ -3,7 +3,7 @@ use promptuity::prompts::SelectOption;
 use crate::config::cli::SimpleCommitsConfig;
 use crate::gen::EMOJIS;
 use crate::tui::widgets::{Autocomplete, AutocompletePriority};
-use crate::tui::{Step, StepResult};
+use crate::tui::{Prompt, Step, StepResult};
 
 #[derive(Default)]
 pub struct Emoji {
@@ -13,25 +13,24 @@ pub struct Emoji {
 impl Step for Emoji {
     fn before_run(
         &mut self,
-        _: &mut promptuity::Promptuity<std::io::Stderr>,
+        _: &mut Prompt,
         _: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
-    self.skip = config.git.as_ref().is_some_and(|cfg| cfg.skip_emojis);
-
+        self.skip = config.git.as_ref().is_some_and(|cfg| cfg.skip_emojis);
         Ok(())
     }
 
     fn run(
         &mut self,
-        p: &mut promptuity::Promptuity<std::io::Stderr>,
+        p: &mut Prompt,
         state: &mut crate::tui::AppData,
         _: &mut SimpleCommitsConfig,
     ) -> StepResult {
         if self.skip {
             return Ok(());
         }
-        
+
         let emojis_mapped = EMOJIS
             .map(|emoji| {
                 SelectOption::new(
