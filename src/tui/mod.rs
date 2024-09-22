@@ -167,7 +167,11 @@ impl CommitBuilder {
         let emoji = emoji.map_or(" ".to_owned(), |e| format!(" {e} "));
         let description = description.unwrap_or("\n".to_owned());
         let footer = footer.unwrap_or_default();
-        let exclamation = is_breaking_change.map_or(String::new(), |_| "!".to_owned());
+        let exclamation = if let Some(true) = is_breaking_change {
+            "!".to_owned()
+        } else {
+            "".to_owned()
+        };
         let breaking_change_message = breaking_change_message.map_or(String::new(), |m| {
             format!("BREAKING CHANGE: {m}").trim().to_string()
         });
