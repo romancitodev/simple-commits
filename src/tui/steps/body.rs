@@ -1,4 +1,6 @@
-use crate::tui::{widgets::MultiInput, AppData, Prompt, Step, StepResult};
+use cliclack::input;
+
+use crate::tui::{AppData, Step, StepResult};
 
 #[derive(Default)]
 pub struct Body;
@@ -6,7 +8,6 @@ pub struct Body;
 impl Step for Body {
     fn before_run(
         &mut self,
-        _prompt: &mut Prompt,
         _state: &mut AppData,
         _config: &mut crate::config::cli::SimpleCommitsConfig,
     ) -> StepResult {
@@ -15,7 +16,6 @@ impl Step for Body {
 
     fn after_run(
         &mut self,
-        _prompt: &mut Prompt,
         _state: &mut AppData,
         _config: &mut crate::config::cli::SimpleCommitsConfig,
     ) -> StepResult {
@@ -24,11 +24,11 @@ impl Step for Body {
 
     fn run(
         &mut self,
-        p: &mut Prompt,
-        _: &mut AppData,
+        app: &mut AppData,
         _: &mut crate::config::cli::SimpleCommitsConfig,
     ) -> StepResult {
-        let _ = p.prompt(&mut MultiInput::new());
+        let body: String = input("Body").multiline().required(false).interact()?;
+        app.commit.set_description(Some(body));
         Ok(())
     }
 }

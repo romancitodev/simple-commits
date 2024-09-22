@@ -1,7 +1,8 @@
-use promptuity::prompts::Confirm;
+use cliclack::confirm;
+use cliclack::log::{info, step};
 
 use crate::tui::helpers::BLANK_CHARACTER;
-use crate::tui::{Action, Prompt};
+use crate::tui::Action;
 use crate::{
     config::cli::SimpleCommitsConfig,
     tui::{Step, StepResult},
@@ -17,7 +18,6 @@ pub struct Execute {
 impl Step for Execute {
     fn before_run(
         &mut self,
-        _: &mut Prompt,
         state: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
@@ -27,7 +27,7 @@ impl Step for Execute {
             .map(|cfg| cfg.skip_preview)
             .unwrap_or(false);
 
-        let commit = state.commit.clone().build()?;
+        let commit = state.commit.clone().build().unwrap();
 
         let command = {
             let base = ["git", "commit", "-m", &commit.0]
@@ -54,26 +54,22 @@ impl Step for Execute {
         Ok(())
     }
 
-    fn run(
-        &mut self,
-        p: &mut Prompt,
-        state: &mut crate::tui::AppData,
-        _: &mut SimpleCommitsConfig,
-    ) -> StepResult {
+    fn run(&mut self, state: &mut crate::tui::AppData, _: &mut SimpleCommitsConfig) -> StepResult {
         if self.skip {
             let (head, tail) = self.cmd.split_first().unwrap();
             self.action = Action::Commit(head.clone(), tail.to_vec());
             return Ok(());
         }
 
-        let commit = state.commit.clone().build()?;
+        let commit = state.commit.clone().build().unwrap();
 
-        let execute =
-            p.prompt(Confirm::new("Do you want to execute this command?").with_default(true))?;
+        let execute = confirm("Do you want to execute this command?")
+            .initial_value(true)
+            .interact()?;
         if !execute {
-            p.step("Commit preview")?;
-            p.log(commit.0)?;
-            p.log(BLANK_CHARACTER)?;
+            step("Commit preview")?;
+            info(commit.0)?;
+            info(BLANK_CHARACTER)?;
         } else {
             let (head, tail) = self.cmd.split_first().unwrap();
             self.action = Action::Commit(head.clone(), tail.to_vec());
@@ -84,9 +80,8 @@ impl Step for Execute {
 
     fn after_run(
         &mut self,
-        _: &mut Prompt,
         _: &mut crate::tui::AppData,
-        _config: &mut SimpleCommitsConfig,
+        _: &mut SimpleCommitsConfig,
     ) -> StepResult {
         self.action.execute_action();
         Ok(())

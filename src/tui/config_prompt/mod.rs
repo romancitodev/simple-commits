@@ -1,28 +1,26 @@
-use promptuity::Error;
-
 use crate::config::cli::SimpleCommitsConfig;
-
-use super::Prompt;
+use cliclack::{
+    intro,
+    log::{info, step},
+    outro,
+};
 
 pub fn init(
-    prompt: &mut Prompt,
     SimpleCommitsConfig { config, .. }: &mut SimpleCommitsConfig,
-) -> Result<(), Error> {
-    prompt.with_intro("Simple Commit").begin()?;
+) -> Result<(), std::io::Error> {
+    intro("Simple Commit")?;
 
-    prompt.step("Setting up configuration files")?;
+    step("Setting up configuration files")?;
 
-    prompt.log("")?;
-    prompt.info("Succesfully created.")?;
-    prompt.log(format!("Path: {config:?}"))?;
-    prompt.log("")?;
+    info("")?;
+    info("Succesfully created.")?;
+    info(format!("Path: {config:?}"))?;
+    info("")?;
 
-    prompt
-        .with_outro(concat!(
-            "In case of issues, please report it to https://github.com/romancitodev/simple-commits\n",
-            "\u{2764}  Thanks for use this tool!",
-        ))
-        .finish()?;
+    outro(concat!(
+        "In case of issues, please report it to https://github.com/romancitodev/simple-commits\n",
+        "\u{2764}  Thanks for use this tool!",
+    ))?;
 
     Ok(())
 }

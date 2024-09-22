@@ -1,4 +1,5 @@
 mod config;
+pub mod errors;
 mod gen;
 mod tui;
 

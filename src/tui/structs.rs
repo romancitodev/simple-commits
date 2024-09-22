@@ -9,7 +9,7 @@ pub struct Commit<'scope> {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Scope {
-    scopes: Vec<InnerScope>,
+    pub scopes: Vec<InnerScope>,
 }
 
 impl Scope {
@@ -38,6 +38,10 @@ pub struct InnerScope {
 }
 
 impl InnerScope {
+    pub fn new(name: String, description: Option<String>) -> Self {
+        Self { name, description }
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }
