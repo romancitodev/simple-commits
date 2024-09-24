@@ -1,3 +1,5 @@
+use crate::tui::structs::Scope;
+
 use super::cli::{InitOptions, SimpleCommitsConfig};
 use directories::BaseDirs;
 use merge2::Merge;
@@ -40,6 +42,7 @@ pub fn load_config(path: Option<PathBuf>, config: &mut SimpleCommitsConfig) -> C
     if let Ok(content) = std::fs::read_to_string(&global_path) {
         let mut global_config: SimpleCommitsConfig = toml::from_str(&content).unwrap();
         config.config = global_path.clone();
+        config.scopes = Some(Scope::default());
         config.merge(&mut global_config);
     }
 
@@ -48,8 +51,8 @@ pub fn load_config(path: Option<PathBuf>, config: &mut SimpleCommitsConfig) -> C
     if let Ok(local_path_ok) = &local_path {
         if let Ok(content) = std::fs::read_to_string(local_path_ok) {
             let mut local_config: SimpleCommitsConfig = toml::from_str(&content).unwrap();
-            log::trace!("{:#?}", config);
             config.config = local_path_ok.clone();
+            config.scopes = Some(Scope::default());
             config.merge(&mut local_config);
         }
     }

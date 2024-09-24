@@ -18,6 +18,8 @@ license = false
 eula = false
 
 [dependencies]
+thiserror = "1"
+cliclack = "0.3.4"
 clap = { version = "4.5.3", features = ["derive"] }
 clap_derive = { version = "4.0.0-rc.1" }
 colored = "2.1.0"
@@ -26,7 +28,6 @@ env_logger = "0.11.3"
 fuzzy-matcher = "0.3.7"
 log = "0.4.21"
 merge2 = "0.3.0"
-promptuity = "0.0.5"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["rt", "macros", "sync", "rt-multi-thread"] }
 toml = "0.8.8"

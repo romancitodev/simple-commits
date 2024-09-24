@@ -1,9 +1,8 @@
-use promptuity::prompts::SelectOption;
+use cliclack::select;
 
 use crate::config::cli::SimpleCommitsConfig;
 use crate::gen::EMOJIS;
-use crate::tui::widgets::{Autocomplete, AutocompletePriority};
-use crate::tui::{Prompt, Step, StepResult};
+use crate::tui::{Step, StepResult};
 
 #[derive(Default)]
 pub struct Emoji {
@@ -13,7 +12,6 @@ pub struct Emoji {
 impl Step for Emoji {
     fn before_run(
         &mut self,
-        _: &mut Prompt,
         _: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
@@ -21,33 +19,20 @@ impl Step for Emoji {
         Ok(())
     }
 
-    fn run(
-        &mut self,
-        p: &mut Prompt,
-        state: &mut crate::tui::AppData,
-        _: &mut SimpleCommitsConfig,
-    ) -> StepResult {
+    fn run(&mut self, state: &mut crate::tui::AppData, _: &mut SimpleCommitsConfig) -> StepResult {
         if self.skip {
             return Ok(());
         }
 
-        let emojis_mapped = EMOJIS
-            .map(|emoji| {
-                SelectOption::new(
-                    format!("{} {}", emoji.emoji, emoji.description),
-                    emoji.emoji.to_string(),
-                )
-                .with_hint(emoji.name)
-            })
-            .to_vec();
-        let emoji = p.prompt(&mut Autocomplete::new(
-            "Select an emoji (optional)",
-            false,
-            AutocompletePriority::Hint,
-            emojis_mapped,
-        ))?;
+        let emojis_mapped =
+            EMOJIS.map(|d| (d.emoji, format!("{} {}", d.emoji, d.description), d.name));
 
-        let emoji = (!emoji.is_empty()).then_some(emoji);
+        let emoji = select("Select an emoji (optional)")
+            .items(&emojis_mapped)
+            .filter_mode()
+            .interact()?;
+
+        let emoji = (!emoji.is_empty() && emoji != "❌").then_some(emoji.to_owned());
         state.commit.set_emoji(emoji);
 
         Ok(())

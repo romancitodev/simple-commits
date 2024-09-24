@@ -1,30 +1,23 @@
-use std::io::Stdout;
+use crate::{
+    config::{cli::SimpleCommitsConfig, get_config},
+    errors::AppError,
+};
 
-use crate::config::{cli::SimpleCommitsConfig, get_config};
-
-pub type Prompt<'infer> = promptuity::Promptuity<'infer, Stdout>;
-
-pub mod config;
 pub mod config_prompt;
 pub mod helpers;
 pub mod steps;
 pub mod structs;
 pub mod widgets;
 
-use config as tui;
-use promptuity::Error;
-
 /// initialize the configuration and setup the steps
 pub fn init() {
-    let (mut term, mut theme) = tui::prepare();
-    let mut prompt = tui::generate_prompt(&mut term, &mut theme);
     let (mut config, command) = get_config();
     match command {
         Some(_) => {
-            _ = config_prompt::init(&mut prompt, &mut config);
+            _ = config_prompt::init(&mut config);
         }
         None => {
-            _ = steps::init(&mut prompt, &mut config);
+            _ = steps::init(&mut config);
         }
     }
 }
@@ -59,35 +52,24 @@ impl Action {
     }
 }
 
-pub type StepResult = Result<(), Error>;
+pub type StepResult = Result<(), AppError>;
 
 /// A trait to setup steps along the TUI app.
 
 pub trait Step {
     fn before_run(
         &mut self,
-        _prompt: &mut Prompt,
         _state: &mut AppData,
         _config: &mut SimpleCommitsConfig,
     ) -> StepResult {
         Ok(())
     }
 
-    fn after_run(
-        &mut self,
-        _prompt: &mut Prompt,
-        _state: &mut AppData,
-        _config: &mut SimpleCommitsConfig,
-    ) -> StepResult {
+    fn after_run(&mut self, _state: &mut AppData, _config: &mut SimpleCommitsConfig) -> StepResult {
         Ok(())
     }
 
-    fn run(
-        &mut self,
-        prompt: &mut Prompt,
-        state: &mut AppData,
-        config: &mut SimpleCommitsConfig,
-    ) -> StepResult;
+    fn run(&mut self, state: &mut AppData, config: &mut SimpleCommitsConfig) -> StepResult;
 }
 
 #[macro_export]
@@ -118,6 +100,7 @@ pub struct CommitBuilder {
 
 pub struct Commit(String);
 
+#[derive(Debug)]
 pub enum BuildError {
     TypeRequired,
     TitleRequired,
@@ -184,32 +167,21 @@ impl CommitBuilder {
         let emoji = emoji.map_or(" ".to_owned(), |e| format!(" {e} "));
         let description = description.unwrap_or("\n".to_owned());
         let footer = footer.unwrap_or_default();
-        let exclamation = is_breaking_change.map_or(String::new(), |_| "!".to_owned());
+        let exclamation = if let Some(true) = is_breaking_change {
+            "!".to_owned()
+        } else {
+            "".to_owned()
+        };
         let breaking_change_message = breaking_change_message.map_or(String::new(), |m| {
             format!("BREAKING CHANGE: {m}").trim().to_string()
         });
 
         let commit = format!(
-            "{type}{scope}{exclamation}:{emoji}{title}
-
-            {description}
-
-            {breaking_change_message}
-            {footer}
-            "
+            "{type}{scope}{exclamation}:{emoji}{title}\n\n{description}\n\n{breaking_change_message}\n\n{footer}"
         )
         .trim()
         .to_string();
 
         Ok(Commit(commit))
-    }
-}
-
-impl From<BuildError> for Error {
-    fn from(value: BuildError) -> Self {
-        match value {
-            BuildError::TypeRequired => Error::Prompt("Type required".to_owned()),
-            BuildError::TitleRequired => Error::Prompt("Title required".to_owned()),
-        }
     }
 }
