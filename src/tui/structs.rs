@@ -46,8 +46,8 @@ impl InnerScope {
         &self.name
     }
 
-    pub fn description(&self) -> &Option<String> {
-        &self.description
+    pub fn description(&self) -> Option<&String> {
+        self.description.as_ref()
     }
 }
 
@@ -101,7 +101,7 @@ pub const COMMIT_TYPES: [Commit; 9] = [
     ),
 ];
 
-impl<'scope> std::fmt::Display for Commit<'scope> {
+impl std::fmt::Display for Commit<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let Self { emoji, label, .. } = self;
         write!(f, "{emoji} {label}")

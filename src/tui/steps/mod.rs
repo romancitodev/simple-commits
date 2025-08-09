@@ -29,11 +29,11 @@ pub fn init(config: &mut SimpleCommitsConfig) -> Result<(), AppError> {
 
     intro("Simple Commit")?;
 
-    for step in steps.iter_mut() {
+    for step in &mut steps {
         let _before = step.before_run(&mut state, config);
         let res = step.run(&mut state, config);
         if let Err(err) = res {
-            let msg = format!("❌ Error: {:?}", err);
+            let msg = format!("❌ Error: {err:?}");
             error!(target: "tui::steps", "{}", msg.bright_red());
             return Err(AppError::Step(msg));
         }

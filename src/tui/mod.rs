@@ -42,12 +42,13 @@ impl Action {
         match self {
             Self::DryRun(msg) => println!("{msg}"),
             Self::Commit(cmd, args) => {
-                std::process::Command::new(cmd)
+                let _ = std::process::Command::new(cmd)
                     .args(&args[..])
                     .spawn()
-                    .unwrap();
+                    .expect("The child failed for some reason")
+                    .wait();
             }
-            _ => {}
+            Self::None => {}
         }
     }
 }
@@ -55,7 +56,6 @@ impl Action {
 pub type StepResult = Result<(), AppError>;
 
 /// A trait to setup steps along the TUI app.
-
 pub trait Step {
     fn before_run(
         &mut self,
@@ -154,7 +154,7 @@ impl CommitBuilder {
         if r#type.is_none() {
             log::error!("Type of commit required");
             return Err(BuildError::TypeRequired);
-        };
+        }
 
         if title.is_none() {
             log::error!("Title of the commit required");
@@ -170,7 +170,7 @@ impl CommitBuilder {
         let exclamation = if let Some(true) = is_breaking_change {
             "!".to_owned()
         } else {
-            "".to_owned()
+            String::new()
         };
         let breaking_change_message = breaking_change_message.map_or(String::new(), |m| {
             format!("BREAKING CHANGE: {m}").trim().to_string()

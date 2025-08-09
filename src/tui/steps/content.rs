@@ -18,7 +18,7 @@ impl Step for Title {
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
         self.skip = config.message.as_ref().is_some();
-        self.title = config.message.clone();
+        self.title.clone_from(&config.message);
         Ok(())
     }
 

@@ -21,11 +21,7 @@ impl Step for Execute {
         state: &mut crate::tui::AppData,
         config: &mut SimpleCommitsConfig,
     ) -> StepResult {
-        self.skip = config
-            .git
-            .as_ref()
-            .map(|cfg| cfg.skip_preview)
-            .unwrap_or(false);
+        self.skip = config.git.as_ref().is_some_and(|cfg| cfg.skip_preview);
 
         let commit = state.commit.clone().build().unwrap();
 
@@ -66,14 +62,14 @@ impl Step for Execute {
         let execute = confirm("Do you want to execute this command?")
             .initial_value(true)
             .interact()?;
-        if !execute {
+        if execute {
+            let (head, tail) = self.cmd.split_first().unwrap();
+            self.action = Action::Commit(head.clone(), tail.to_vec());
+        } else {
             step("Commit preview")?;
             info(commit.0)?;
             info(BLANK_CHARACTER)?;
-        } else {
-            let (head, tail) = self.cmd.split_first().unwrap();
-            self.action = Action::Commit(head.clone(), tail.to_vec());
-        };
+        }
 
         Ok(())
     }

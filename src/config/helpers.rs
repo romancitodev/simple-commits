@@ -41,7 +41,7 @@ pub fn load_config(path: Option<PathBuf>, config: &mut SimpleCommitsConfig) -> C
 
     if let Ok(content) = std::fs::read_to_string(&global_path) {
         let mut global_config: SimpleCommitsConfig = toml::from_str(&content).unwrap();
-        config.config = global_path.clone();
+        config.config.clone_from(&global_path);
         config.scopes = Some(Scope::default());
         config.merge(&mut global_config);
     }
@@ -51,7 +51,7 @@ pub fn load_config(path: Option<PathBuf>, config: &mut SimpleCommitsConfig) -> C
     if let Ok(local_path_ok) = &local_path {
         if let Ok(content) = std::fs::read_to_string(local_path_ok) {
             let mut local_config: SimpleCommitsConfig = toml::from_str(&content).unwrap();
-            config.config = local_path_ok.clone();
+            config.config.clone_from(local_path_ok);
             config.scopes = Some(Scope::default());
             config.merge(&mut local_config);
         }

@@ -27,7 +27,7 @@ impl Step for Scope {
                 (
                     scope.name(),
                     scope.name(),
-                    scope.description().clone().unwrap_or_default(),
+                    scope.description().map_or(String::new(), Clone::clone),
                 )
             })
             .collect::<Vec<_>>();
@@ -49,7 +49,7 @@ impl Step for Scope {
             config
                 .update()
                 .inspect_err(|err| {
-                    error!(target: "step::scope", "error updating the scopes: {}", err);
+                    error!(target: "step::scope", "error updating the scopes: {err}");
                 })
                 .unwrap();
         }

@@ -10,21 +10,18 @@ pub fn get_config() -> (cli::SimpleCommitsConfig, Option<Command>) {
     let mut args = cli::CliConfig::parse();
     let mut config = cli::SimpleCommitsConfig::default();
 
-    match args.mode {
-        Some(Command::Init(option)) => {
-            let path = helpers::create_config(option);
-            config.config = path;
-        }
-        _ => {
-            let (global_path, local_path) = helpers::load_config(args.config, &mut config);
+    if let Some(Command::Init(option)) = args.mode {
+        let path = helpers::create_config(option);
+        config.config = path;
+    } else {
+        let (global_path, local_path) = helpers::load_config(args.config, &mut config);
 
-            if let Some(local_path) = local_path {
-                config.config = local_path;
-            } else {
-                config.config = global_path;
-            }
-            config.merge(&mut args.sc_config);
+        if let Some(local_path) = local_path {
+            config.config = local_path;
+        } else {
+            config.config = global_path;
         }
+        config.merge(&mut args.sc_config);
     }
     (config, args.mode)
 }

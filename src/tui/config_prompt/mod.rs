@@ -14,7 +14,7 @@ pub fn init(
 
     info("")?;
     info("Succesfully created.")?;
-    info(format!("Path: {config:?}"))?;
+    info(format!("Path: {}", config.display()))?;
     info("")?;
 
     outro(concat!(

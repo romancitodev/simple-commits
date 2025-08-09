@@ -36,7 +36,7 @@ impl Step for Message {
     fn run(&mut self, state: &mut crate::tui::AppData, _: &mut SimpleCommitsConfig) -> StepResult {
         if !self.execute {
             return Ok(());
-        };
+        }
 
         let breaking_change_msg: String = input("Expand the breaking change description")
             .required(false)
