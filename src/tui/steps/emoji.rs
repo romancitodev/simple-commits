@@ -29,6 +29,7 @@ impl Step for Emoji {
 
         let emoji = select("Select an emoji (optional)")
             .items(&emojis_mapped)
+            .max_rows(8)
             .filter_mode()
             .interact()?;
 
