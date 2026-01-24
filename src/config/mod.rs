@@ -6,9 +6,9 @@ pub mod cli;
 pub mod git;
 pub mod helpers;
 
-pub fn get_config() -> (cli::SimpleCommitsConfig, Option<Command>) {
+pub fn get_config() -> (cli::AppConfig, Option<Command>) {
     let mut args = cli::CliConfig::parse();
-    let mut config = cli::SimpleCommitsConfig::default();
+    let mut config = cli::AppConfig::default();
 
     if let Some(Command::Init(option)) = args.mode {
         let path = helpers::create_config(option);

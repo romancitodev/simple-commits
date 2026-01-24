@@ -1,13 +1,11 @@
-use crate::config::cli::SimpleCommitsConfig;
+use crate::config::cli::AppConfig;
 use cliclack::{
     intro,
     log::{info, step},
     outro,
 };
 
-pub fn init(
-    SimpleCommitsConfig { config, .. }: &mut SimpleCommitsConfig,
-) -> Result<(), std::io::Error> {
+pub fn init(AppConfig { config, .. }: AppConfig) -> Result<(), std::io::Error> {
     intro("Simple Commit")?;
 
     step("Setting up configuration files")?;

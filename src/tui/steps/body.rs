@@ -1,34 +1,21 @@
+use crate::{errors::AppError, reimpl::Pipeline};
 use cliclack::input;
+use log::info;
 
-use crate::tui::{AppData, Step, StepResult};
+/// Step 7: Body/Description Input
+///
+/// Prompts the user to enter an optional multiline body/description for the commit.
+/// This provides additional context beyond the title.
+pub fn input_body(Pipeline { state, .. }: &mut Pipeline) -> Result<(), AppError> {
+    let body: String = input("Body").multiline().required(false).interact()?;
 
-#[derive(Default)]
-pub struct Body;
+    state.commit.set_description(Some(body.clone()));
 
-impl Step for Body {
-    fn before_run(
-        &mut self,
-        _state: &mut AppData,
-        _config: &mut crate::config::cli::SimpleCommitsConfig,
-    ) -> StepResult {
-        Ok(())
-    }
+    info!(
+        target: "tui::steps::body",
+        "body length: {} chars",
+        body.len()
+    );
 
-    fn after_run(
-        &mut self,
-        _state: &mut AppData,
-        _config: &mut crate::config::cli::SimpleCommitsConfig,
-    ) -> StepResult {
-        Ok(())
-    }
-
-    fn run(
-        &mut self,
-        app: &mut AppData,
-        _: &mut crate::config::cli::SimpleCommitsConfig,
-    ) -> StepResult {
-        let body: String = input("Body").multiline().required(false).interact()?;
-        app.commit.set_description(Some(body));
-        Ok(())
-    }
+    Ok(())
 }

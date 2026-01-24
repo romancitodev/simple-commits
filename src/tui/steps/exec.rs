@@ -1,85 +1,71 @@
+use crate::{errors::AppError, reimpl::Pipeline};
 use cliclack::confirm;
-use cliclack::log::{info, step};
+use log::info;
 
-use crate::tui::helpers::BLANK_CHARACTER;
-use crate::tui::Action;
-use crate::{
-    config::cli::SimpleCommitsConfig,
-    tui::{Step, StepResult},
-};
+/// Step 9: Execute/Preview Commit
+///
+/// Builds the final commit message and either executes it or shows a preview.
+/// The behavior depends on the `skip_preview` configuration.
+pub fn execute_commit(pipeline: &mut Pipeline) -> Result<(), AppError> {
+    let commit = pipeline.state.commit.clone().build().unwrap();
 
-#[derive(Default)]
-pub struct Execute {
-    skip: bool,
-    action: Action,
-    cmd: Vec<String>,
-}
+    let command = {
+        let base = ["git", "commit", "-m", &commit.0]
+            .iter()
+            .map(|s| String::from(*s))
+            .collect::<Vec<_>>();
 
-impl Step for Execute {
-    fn before_run(
-        &mut self,
-        state: &mut crate::tui::AppData,
-        config: &mut SimpleCommitsConfig,
-    ) -> StepResult {
-        self.skip = config.git.as_ref().is_some_and(|cfg| cfg.skip_preview);
-
-        let commit = state.commit.clone().build().unwrap();
-
-        let command = {
-            let base = ["git", "commit", "-m", &commit.0]
-                .iter()
-                .map(|s| String::from(*s))
-                .collect::<Vec<_>>();
-
-            if let Some(cfg) = &config.git {
-                cfg.commit_template.as_ref().map_or_else(
-                    || base,
-                    |cfg| {
-                        cfg.iter()
-                            .map(|msg| msg.replace("{{message}}", &commit.0))
-                            .collect::<Vec<_>>()
-                    },
-                )
-            } else {
-                base
-            }
-        };
-
-        self.cmd = command;
-
-        Ok(())
-    }
-
-    fn run(&mut self, state: &mut crate::tui::AppData, _: &mut SimpleCommitsConfig) -> StepResult {
-        if self.skip {
-            let (head, tail) = self.cmd.split_first().unwrap();
-            self.action = Action::Commit(head.clone(), tail.to_vec());
-            return Ok(());
+        if let Some(cfg) = &pipeline.config.git {
+            cfg.commit_template.as_ref().map_or_else(
+                || base,
+                |cfg| {
+                    cfg.iter()
+                        .map(|msg| msg.replace("{{message}}", &commit.0))
+                        .collect::<Vec<_>>()
+                },
+            )
+        } else {
+            base
         }
+    };
 
-        let commit = state.commit.clone().build().unwrap();
+    let skip_preview = pipeline
+        .config
+        .git
+        .as_ref()
+        .is_some_and(|cfg| cfg.skip_preview);
 
+    if skip_preview {
+        let (head, tail) = command.split_first().unwrap();
+        let _ = std::process::Command::new(head)
+            .args(tail)
+            .spawn()
+            .expect("The child failed for some reason")
+            .wait();
+
+        info!(target: "tui::steps::execute", "commit executed without preview");
+    } else {
         let execute = confirm("Do you want to execute this command?")
             .initial_value(true)
             .interact()?;
+
         if execute {
-            let (head, tail) = self.cmd.split_first().unwrap();
-            self.action = Action::Commit(head.clone(), tail.to_vec());
+            let (head, tail) = command.split_first().unwrap();
+            let _ = std::process::Command::new(head)
+                .args(tail)
+                .spawn()
+                .expect("The child failed for some reason")
+                .wait();
+
+            info!(target: "tui::steps::execute", "commit executed");
         } else {
-            step("Commit preview")?;
-            info(commit.0)?;
-            info(BLANK_CHARACTER)?;
+            cliclack::log::step("Commit preview")?;
+            cliclack::log::info(commit.0)?;
+            cliclack::log::info("")?;
+
+            info!(target: "tui::steps::execute", "commit preview shown");
         }
-
-        Ok(())
     }
 
-    fn after_run(
-        &mut self,
-        _: &mut crate::tui::AppData,
-        _: &mut SimpleCommitsConfig,
-    ) -> StepResult {
-        self.action.execute_action();
-        Ok(())
-    }
+    Ok(())
 }

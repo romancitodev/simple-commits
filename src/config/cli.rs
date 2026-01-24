@@ -14,7 +14,7 @@ pub struct CliConfig {
     pub(super) config: Option<PathBuf>,
 
     #[clap(flatten)]
-    pub(super) sc_config: SimpleCommitsConfig,
+    pub(super) sc_config: AppConfig,
 
     #[command(subcommand)]
     pub(super) mode: Option<Command>,
@@ -34,7 +34,7 @@ pub enum InitOptions {
 
 /// File settings for customizing the bin.
 #[derive(Debug, Default, Serialize, Deserialize, Parser, Merge)]
-pub struct SimpleCommitsConfig {
+pub struct AppConfig {
     #[merge(skip)]
     #[serde(skip)]
     #[clap(skip)]
@@ -54,7 +54,7 @@ pub struct SimpleCommitsConfig {
     pub git: Option<GitConfig>,
 }
 
-impl SimpleCommitsConfig {
+impl AppConfig {
     pub fn update(&self) -> std::io::Result<()> {
         let updated = toml::to_string_pretty(&self).unwrap();
         fs::write(&self.config, updated)?;

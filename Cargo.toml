@@ -2,14 +2,9 @@
 name = "simple-commit"
 description = "A little CLI written in rust to improve your dirty commits into conventional ones. "
 repository = "https://github.com/romancitodev/simple-commits"
-authors = ["romancitodev"]
 version = "1.0.2"
 edition = "2021"
 license = "MIT"
-
-[[bin]]
-name = "sc"
-path = "src/main.rs"
 
 [package.metadata.wix]
 upgrade-guid = "C20E12CB-E616-45DF-8B01-11541D65C6CE"
@@ -17,9 +12,13 @@ path-guid = "E4D36954-1F3E-4535-A0BA-B439FA323671"
 license = false
 eula = false
 
+[[bin]]
+name = "sc"
+path = "src/main.rs"
+
 [dependencies]
 thiserror = "1"
-cliclack = "0.3.4"
+cliclack = "0.3.7"
 clap = { version = "4.5.3", features = ["derive"] }
 clap_derive = { version = "4.0.0-rc.1" }
 colored = "2.1.0"

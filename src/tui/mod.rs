@@ -1,7 +1,4 @@
-use crate::{
-    config::{cli::SimpleCommitsConfig, get_config},
-    errors::AppError,
-};
+use crate::config::get_config;
 
 pub mod config_prompt;
 pub mod helpers;
@@ -11,13 +8,13 @@ pub mod widgets;
 
 /// initialize the configuration and setup the steps
 pub fn init() {
-    let (mut config, command) = get_config();
+    let (config, command) = get_config();
     match command {
         Some(_) => {
-            _ = config_prompt::init(&mut config);
+            _ = config_prompt::init(config);
         }
         None => {
-            _ = steps::init(&mut config);
+            _ = steps::init(config);
         }
     }
 }
@@ -27,65 +24,16 @@ pub struct AppData {
     pub commit: CommitBuilder,
 }
 
-#[allow(dead_code)]
-#[derive(Clone, Debug, Default)]
-pub enum Action {
-    #[default]
-    None,
-    DryRun(String),
-    Commit(String, Vec<String>),
-}
-
-impl Action {
-    /// Returns the action to be executed of this [`Action`].
-    pub fn execute_action(&self) {
-        match self {
-            Self::DryRun(msg) => println!("{msg}"),
-            Self::Commit(cmd, args) => {
-                let _ = std::process::Command::new(cmd)
-                    .args(&args[..])
-                    .spawn()
-                    .expect("The child failed for some reason")
-                    .wait();
-            }
-            Self::None => {}
-        }
-    }
-}
-
-pub type StepResult = Result<(), AppError>;
-
-/// A trait to setup steps along the TUI app.
-pub trait Step {
-    fn before_run(
-        &mut self,
-        _state: &mut AppData,
-        _config: &mut SimpleCommitsConfig,
-    ) -> StepResult {
-        Ok(())
-    }
-
-    fn after_run(&mut self, _state: &mut AppData, _config: &mut SimpleCommitsConfig) -> StepResult {
-        Ok(())
-    }
-
-    fn run(&mut self, state: &mut AppData, config: &mut SimpleCommitsConfig) -> StepResult;
-}
-
-#[macro_export]
-macro_rules! gen_steps {
-    ($($struct:ty),*) => {
-        {
-            let steps: Vec<Box<dyn super::Step>> = vec![
-                $(
-                    Box::new(<$struct>::default()),
-                )*
-            ];
-            steps
-        }
-    };
-}
-
+/// Builder for constructing a conventional commit message.
+///
+/// This builder follows the Conventional Commits specification and supports:
+/// - Commit type (feat, fix, docs, etc.)
+/// - Optional scope
+/// - Optional emoji
+/// - Title/subject line
+/// - Optional body/description
+/// - Optional footer notes
+/// - Breaking change markers and messages
 #[derive(Debug, Default, Clone)]
 pub struct CommitBuilder {
     r#type: Option<String>,
@@ -98,11 +46,15 @@ pub struct CommitBuilder {
     breaking_change_message: Option<String>, // This will filled if is_breaking_change is true
 }
 
-pub struct Commit(String);
+/// The final commit message ready to be executed.
+pub struct Commit(pub String);
 
+/// Errors that can occur when building a commit message.
 #[derive(Debug)]
 pub enum BuildError {
+    /// The commit type (feat, fix, etc.) is required but was not provided.
     TypeRequired,
+    /// The commit title/subject is required but was not provided.
     TitleRequired,
 }
 

@@ -1,52 +1,50 @@
+use crate::{errors::AppError, reimpl::Pipeline};
 use cliclack::{confirm, input};
+use log::info;
 
-use crate::{
-    config::cli::SimpleCommitsConfig,
-    tui::{Step, StepResult},
-};
+/// Step 3: Breaking Change Confirmation
+///
+/// Prompts the user to confirm if this commit is a breaking change.
+/// Updates the pipeline state with the breaking change flag.
+pub fn ask_breaking_change(pipeline: &mut Pipeline) -> Result<bool, AppError> {
+    let is_breaking = confirm("Is this a breaking change?")
+        .initial_value(false)
+        .interact()?;
 
-#[derive(Default)]
-pub struct Breaking;
+    pipeline
+        .state
+        .commit
+        .set_is_breaking_change(Some(is_breaking));
 
-impl Step for Breaking {
-    fn run(&mut self, state: &mut crate::tui::AppData, _: &mut SimpleCommitsConfig) -> StepResult {
-        let is_breaking = confirm("Is this a breaking change?")
-            .initial_value(false)
-            .interact()?;
-        state.commit.set_is_breaking_change(Some(is_breaking));
-        Ok(())
-    }
+    info!(target: "tui::steps::breaking", "is breaking change: {is_breaking}");
+    Ok(is_breaking)
 }
 
-#[derive(Default)]
-pub struct Message {
-    execute: bool,
-}
-
-impl Step for Message {
-    fn before_run(
-        &mut self,
-        state: &mut crate::tui::AppData,
-        _: &mut SimpleCommitsConfig,
-    ) -> StepResult {
-        self.execute = state.commit.is_breaking_change.unwrap_or_default();
-        Ok(())
+/// Step 4: Breaking Change Message
+///
+/// If the commit is a breaking change, prompts the user for a detailed description.
+/// This step is skipped if the commit is not a breaking change.
+pub fn ask_breaking_message(pipeline: &mut Pipeline) -> Result<(), AppError> {
+    // Skip if not a breaking change
+    if !pipeline.state.commit.is_breaking_change.unwrap_or_default() {
+        info!(target: "tui::steps::breaking_msg", "skipped - not a breaking change");
+        return Ok(());
     }
 
-    fn run(&mut self, state: &mut crate::tui::AppData, _: &mut SimpleCommitsConfig) -> StepResult {
-        if !self.execute {
-            return Ok(());
-        }
+    let breaking_change_msg: String = input("Expand the breaking change description")
+        .required(false)
+        .interact()?;
 
-        let breaking_change_msg: String = input("Expand the breaking change description")
-            .required(false)
-            .interact()?;
+    let breaking_change_msg = (!breaking_change_msg.is_empty()).then_some(breaking_change_msg);
 
-        let breaking_change_msg = (!breaking_change_msg.is_empty()).then_some(breaking_change_msg);
+    pipeline
+        .state
+        .commit
+        .set_breaking_change_message(breaking_change_msg.clone());
 
-        state
-            .commit
-            .set_breaking_change_message(breaking_change_msg);
-        Ok(())
-    }
+    info!(
+        target: "tui::steps::breaking_msg",
+        "breaking change message: {breaking_change_msg:?}"
+    );
+    Ok(())
 }
