@@ -7,10 +7,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
 pub struct GitConfig {
   /// Confirm before to run git commit
-  #[arg(short = 'p', long = "skip-preview")]
-  pub skip_preview: bool,
-
-  /// Confirm before to run git commit
   #[arg(short = 'e', long = "skip-emojis")]
   pub skip_emojis: bool,
 

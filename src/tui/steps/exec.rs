@@ -16,21 +16,15 @@ pub fn execute_commit(pipeline: &mut Pipeline) -> Result<(), AppError> {
     .as_ref()
     .and_then(|cfg| cfg.commit_template.clone());
 
-  let skip_preview = pipeline
-    .config
-    .git
-    .as_ref()
-    .is_some_and(|cfg| cfg.skip_preview);
+  nobubbles::inline::log::step("Commit preview");
+  nobubbles::inline::log::block(&style::preview_card(&commit.0));
+  info!(target: "tui::steps::execute", "commit preview shown");
 
-  let execute = skip_preview
-    || confirm(style::subtitle("Do you want to execute this command?"))
-      .initial(true)
-      .ask()?;
+  let execute = confirm(style::subtitle("Do you want to execute this command?"))
+    .initial(true)
+    .ask()?;
 
   if !execute {
-    nobubbles::inline::log::step("Commit preview");
-    nobubbles::inline::log::block(&style::preview_card(&commit.0));
-    info!(target: "tui::steps::execute", "commit preview shown");
     return Ok(());
   }
 
