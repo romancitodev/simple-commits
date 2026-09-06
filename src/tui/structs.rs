@@ -39,10 +39,6 @@ pub struct InnerScope {
 }
 
 impl InnerScope {
-  pub fn new(name: String, description: Option<String>) -> Self {
-    Self { name, description }
-  }
-
   pub fn name(&self) -> &str {
     &self.name
   }
