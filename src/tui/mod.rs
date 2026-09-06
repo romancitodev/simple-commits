@@ -145,22 +145,29 @@ impl CommitBuilder {
     let title = title.unwrap();
     let scope = scope.map_or(String::new(), |s| format!("({s})"));
     let emoji = emoji.map_or(" ".to_owned(), |e| format!(" {e} "));
-    let description = description.unwrap_or("\n".to_owned());
-    let footer = footer.unwrap_or_default();
     let exclamation = if let Some(true) = is_breaking_change {
       "!".to_owned()
     } else {
       String::new()
     };
-    let breaking_change_message = breaking_change_message.map_or(String::new(), |m| {
-      format!("BREAKING CHANGE: {m}").trim().to_string()
-    });
+    let breaking_change_message =
+      breaking_change_message.map(|m| format!("BREAKING CHANGE: {m}").trim().to_string());
 
-    let commit = format!(
-            "{type}{scope}{exclamation}:{emoji}{title}\n\n{description}\n\n{breaking_change_message}\n\n{footer}"
-        )
-        .trim()
-        .to_string();
+    let header = format!("{type}{scope}{exclamation}:{emoji}{title}");
+    // Only sections that actually have something to say get a blank line before them, so an
+    // empty body/footer doesn't leave dangling blank lines in the message.
+    let body = [description, breaking_change_message, footer]
+      .into_iter()
+      .flatten()
+      .filter(|section| !section.trim().is_empty())
+      .collect::<Vec<_>>()
+      .join("\n\n");
+
+    let commit = if body.is_empty() {
+      header
+    } else {
+      format!("{header}\n\n{body}")
+    };
 
     Ok(Commit(commit))
   }

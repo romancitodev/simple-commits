@@ -9,6 +9,7 @@ use nobubbles::inline::input;
 pub fn input_body(Pipeline { state, .. }: &mut Pipeline) {
   let body: String = input(style::subtitle("Body"))
     .multiline()
+    .placeholder("[skipped]")
     .ask()
     .expect("Failed to read body input");
 

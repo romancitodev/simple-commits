@@ -1,4 +1,15 @@
-use nobubbles::rimel::{self, Block, Color, palette};
+use nobubbles::rimel::{self, Block, Color, Ramp, colorgrad, palette};
+
+/// Deep green to a bright "added line" green to pale mint — the colors of a commit, for the
+/// banner's app name.
+fn commit_green() -> Ramp {
+  Ramp::new(
+    colorgrad::GradientBuilder::new()
+      .html_colors(&["#0b3d2e", "#2ecc71", "#b7f7c9"])
+      .build::<colorgrad::LinearGradient>()
+      .expect("static hex stops always build"),
+  )
+}
 
 /// Accent color used for every prompt title and banner in this CLI.
 pub const ACCENT: Color = palette::MAUVE;
@@ -15,6 +26,7 @@ pub fn subtitle(text: impl Into<String>) -> Block {
     .bold()
     .px(1)
 }
+
 /// A boxed preview of the commit message, shown before confirming execution — same shape as
 /// the `summary` card in nobubbles' own `commit.rs` example.
 pub fn preview_card(message: &str) -> Block {
@@ -38,11 +50,13 @@ pub fn success_card(message: &str) -> Block {
 /// One-time banner printed above the whole session, before `intro` puts the terminal in raw
 /// mode.
 pub fn banner() {
-  let badge = rimel::text("simple-commits")
+  // `.px()` pads *after* the gradient is painted, so the padding cells would miss it and
+  // break the pill — spaces baked into the text itself sit inside the painted rows instead.
+  let badge = rimel::text(" simple-commits ")
     .fg(palette::BASE)
-    .bg(ACCENT)
     .bold()
-    .px(1);
+    .gradient(commit_green())
+    .on_bg();
   let aside = rimel::text("  conventional commits, guided").fg(palette::OVERLAY1);
 
   println!();
