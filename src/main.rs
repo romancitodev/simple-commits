@@ -1,6 +1,6 @@
 mod config;
 pub mod errors;
-mod gen;
+mod gitmoji;
 mod reimpl;
 mod tui;
 
