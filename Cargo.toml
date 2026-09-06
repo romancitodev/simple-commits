@@ -19,19 +19,19 @@ name = "sc"
 path = "src/main.rs"
 
 [dependencies]
-thiserror = "1"
+thiserror = "2"
 # cliclack = "0.3.7"
 clap = { version = "4.5.3", features = ["derive"] }
 clap_derive = { version = "4.0.0-rc.1" }
-colored = "2.1.0"
-directories = "5.0.1"
+colored = "3.1.1"
+directories = "6.0.0"
 env_logger = "0.11.3"
 fuzzy-matcher = "0.3.7"
 log = "0.4.21"
 merge2 = "0.3.0"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["rt", "macros", "sync", "rt-multi-thread"] }
-toml = "0.8.8"
+toml = "1.1.5"
 nobubbles = { git = "https://github.com/romancitodev/nobubbles", branch = "feat/rimel", version = "0.1.0", features = ["gradient"] }
 eyre = "0.6.14"
 git2 = { version = "0.21.0", default-features = false }
