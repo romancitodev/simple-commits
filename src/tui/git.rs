@@ -357,6 +357,9 @@ fn sign_and_commit(
   let output = child.wait_with_output()?;
   if !output.status.success() {
     let stderr = String::from_utf8_lossy(&output.stderr);
+    if stderr.to_lowercase().contains("bad passphrase") {
+      return Err(AppError::BadPassphrase);
+    }
     return Err(AppError::Step(format!("gpg signing failed: {stderr}")));
   }
 
@@ -400,24 +403,18 @@ mod tests {
     );
   }
 
-  // Exercises commit_create_buffer + the real gpg subprocess + commit_signed + the manual ref
-  // move, against a disposable repo, using this machine's real signing key.
-  // `cargo test -- --ignored signed_commit`.
+  // No real gpg here on purpose: libgit2 never validates the signature string it's handed,
+  // it just stores it, so this only needs to prove *our* plumbing (buffer -> commit_signed ->
+  // moving HEAD's ref by hand, including the no-parent case) without depending on a real key,
+  // a running gpg-agent, or whatever happens to be cached, on any platform.
   #[test]
-  #[ignore]
-  fn signed_commit_end_to_end() {
-    if !passphrase_cached().unwrap() {
-      eprintln!("skipping: gpg-agent's cache is cold, sign something for real first");
-      return;
-    }
-
+  fn commit_signed_moves_the_ref_and_carries_the_header() {
     let dir = tempfile::tempdir().unwrap();
     let repo = Repository::init(dir.path()).unwrap();
     {
       let mut config = repo.config().unwrap();
       config.set_str("user.name", "Test User").unwrap();
       config.set_str("user.email", "test@example.com").unwrap();
-      config.set_str("user.signingkey", "600119FFAF3321AF").unwrap();
     }
     std::fs::write(dir.path().join("a.txt"), "hello").unwrap();
 
@@ -427,74 +424,28 @@ mod tests {
     let tree = repo.find_tree(index.write_tree().unwrap()).unwrap();
     let sig = repo.signature().unwrap();
 
-    // cache is warm from other runs in this process, so any string does
-    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-      sign_and_commit_for_test(&repo, &sig, "test commit", &tree, &[], "irrelevant")
-    }));
-
-    let head = repo.head().unwrap().peel_to_commit().unwrap();
-    assert_eq!(head.message().unwrap(), "test commit");
-    assert!(
-      head.header_field_bytes("gpgsig").is_ok(),
-      "commit should carry a gpgsig header"
-    );
-    result.unwrap().unwrap();
-  }
-
-  fn sign_and_commit_for_test(
-    repo: &Repository,
-    sig: &git2::Signature,
-    message: &str,
-    tree: &git2::Tree,
-    parents: &[&Commit],
-    passphrase: &str,
-  ) -> Result<(), AppError> {
-    let buf = repo.commit_create_buffer(sig, sig, message, tree, parents)?;
+    let buf = repo
+      .commit_create_buffer(&sig, &sig, "test commit", &tree, &[])
+      .unwrap();
     let content = std::str::from_utf8(&buf).unwrap();
+    let fake_signature = "-----BEGIN PGP SIGNATURE-----\n\nnot real, just checking the plumbing\n-----END PGP SIGNATURE-----";
 
-    let mut content_file = NamedTempFile::new()?;
-    content_file.write_all(content.as_bytes())?;
-    content_file.flush()?;
-
-    let (program, key) = gpg_identity(repo)?;
-    let mut command = Command::new(&program);
-    command
-      .arg("--batch")
-      .arg("--pinentry-mode")
-      .arg("loopback")
-      .arg("--passphrase-fd")
-      .arg("0")
-      .arg("--detach-sign")
-      .arg("--armor")
-      .arg("-o")
-      .arg("-");
-    if let Some(key) = &key {
-      command.arg("--local-user").arg(key);
-    }
-    command.arg(content_file.path());
-
-    let mut child = command
-      .stdin(Stdio::piped())
-      .stdout(Stdio::piped())
-      .stderr(Stdio::piped())
-      .spawn()?;
-    writeln!(child.stdin.take().unwrap(), "{passphrase}")?;
-    let output = child.wait_with_output()?;
-    assert!(
-      output.status.success(),
-      "gpg failed: {}",
-      String::from_utf8_lossy(&output.stderr)
-    );
-
-    let signature = String::from_utf8(output.stdout).unwrap();
-    let oid = repo.commit_signed(content, signature.trim_end(), None)?;
-
+    let oid = repo.commit_signed(content, fake_signature, None).unwrap();
     let target = repo
-      .find_reference("HEAD")?
-      .symbolic_target()?
+      .find_reference("HEAD")
+      .unwrap()
+      .symbolic_target()
+      .unwrap()
       .unwrap()
       .to_owned();
-    repo.reference(&target, oid, true, "commit (signed)")?;
-    Ok(())
+    repo.reference(&target, oid, true, "commit (signed)").unwrap();
+
+    let head = repo.head().unwrap().peel_to_commit().unwrap();
+    assert_eq!(head.id(), oid, "HEAD should follow the ref onto a repo with no prior commits");
+    assert_eq!(head.message().unwrap(), "test commit");
+    assert_eq!(
+      std::str::from_utf8(&head.header_field_bytes("gpgsig").unwrap()).unwrap(),
+      fake_signature
+    );
   }
 }

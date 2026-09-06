@@ -12,7 +12,8 @@ use nobubbles::inline::select;
 /// Updates the pipeline state with the selected commit type.
 pub fn select_commit_type(pipeline: &mut Pipeline) -> Result<(), AppError> {
   let mut commits = select(style::subtitle("Select a word"))
-    .items(COMMIT_TYPES.map(|c| format!("{} {}", c.emoji, c.label)));
+    .items(COMMIT_TYPES.map(|c| format!("{} {}", c.emoji, c.label)))
+    .filter();
 
   for (idx, commit) in COMMIT_TYPES.iter().enumerate() {
     commits = commits.note(idx, commit.hint);

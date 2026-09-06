@@ -12,6 +12,8 @@ pub enum AppError {
   Git(#[from] git2::Error),
   #[error("Error on Step: {0:?}")]
   Step(String),
+  #[error("wrong GPG passphrase")]
+  BadPassphrase,
   #[error("Error at nobbubbles level: {0:?}")]
   Nobubbles(#[from] eyre::Report),
 }

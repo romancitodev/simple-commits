@@ -805,7 +805,7 @@ dependencies = [
 [[package]]
 name = "nobubbles"
 version = "0.1.0"
-source = "git+https://github.com/romancitodev/nobubbles?branch=feat%2Frimel#f439681cee3c00e18192a215250baaa1501d2510"
+source = "git+https://github.com/romancitodev/nobubbles?branch=feat%2Frimel#baeb69f978080b53ae7a3841bc22686f097fd0f0"
 dependencies = [
  "crossterm",
  "eyre",
@@ -818,7 +818,7 @@ dependencies = [
 [[package]]
 name = "norimel"
 version = "0.1.0"
-source = "git+https://github.com/romancitodev/nobubbles?branch=feat%2Frimel#f439681cee3c00e18192a215250baaa1501d2510"
+source = "git+https://github.com/romancitodev/nobubbles?branch=feat%2Frimel#baeb69f978080b53ae7a3841bc22686f097fd0f0"
 dependencies = [
  "colorgrad",
  "crossterm",

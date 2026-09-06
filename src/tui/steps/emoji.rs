@@ -20,7 +20,8 @@ pub fn select_emoji(pipeline: &mut Pipeline) -> Result<(), AppError> {
 
   let mut emojis = select(style::subtitle("Select an emoji (optional)"))
     .items(EMOJIS.map(|e| format!("{} {}", e.emoji, e.description)))
-    .max_rows(8);
+    .max_rows(8)
+    .filter();
 
   for (idx, emoji) in EMOJIS.iter().enumerate() {
     if !emoji.name.is_empty() {
