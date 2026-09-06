@@ -78,27 +78,19 @@ fn signing_keygrip(program: &str, key: &str) -> Result<Option<String>, AppError>
     .output()?;
 
   let text = String::from_utf8_lossy(&output.stdout);
-  let lines: Vec<&str> = text.lines().collect();
+  let mut in_signing_key = false;
 
-  for (at, line) in lines.iter().enumerate() {
+  for line in text.lines() {
     let mut fields = line.split(':');
-    let record = fields.next().unwrap_or_default();
-    let can_sign = fields
-      .nth(10)
-      .is_some_and(|caps| caps.to_lowercase().contains('s'));
-
-    if record != "sec" && record != "ssb" || !can_sign {
-      continue;
-    }
-
-    let grip = lines[at + 1..]
-      .iter()
-      .take_while(|next| !next.starts_with("sec:") && !next.starts_with("ssb:"))
-      .find_map(|next| next.strip_prefix("grp:"))
-      .map(|rest| rest.trim_matches(':').to_owned());
-
-    if grip.is_some() {
-      return Ok(grip);
+    match fields.next() {
+      Some("sec" | "ssb") => {
+        in_signing_key = fields
+          .nth(10)
+          .is_some_and(|caps| caps.to_lowercase().contains('s'));
+      }
+      // The keygrip sits in the 10th field: `grp` then 8 empty fields, then it.
+      Some("grp") if in_signing_key => return Ok(fields.nth(8).map(str::to_owned)),
+      _ => {}
     }
   }
 
@@ -219,13 +211,7 @@ pub fn commit(
 ) -> Result<git2::Oid, AppError> {
   let repo = open()?;
 
-  run_hook(
-    &repo,
-    "pre-commit",
-    &[],
-    report,
-    "pre-commit hook rejected the commit",
-  )?;
+  run_hook(&repo, "pre-commit", report, "pre-commit hook rejected the commit")?;
   let message = run_commit_msg_hook(&repo, message, report)?;
 
   let mut index = repo.index()?;
@@ -235,15 +221,17 @@ pub fn commit(
     Ok(head) => Some(head.peel_to_commit()?),
     Err(_) => None,
   };
-  let parents: Vec<&Commit> = parent.iter().collect();
+  // At most one parent, so a stack array stands in for the `Vec` a real merge would need.
+  let parent = parent.as_ref().map(|c| [c]);
+  let parents: &[&Commit] = parent.as_ref().map_or(&[], |one| one);
 
   let oid = if repo.config()?.get_bool("commit.gpgsign").unwrap_or(false) {
-    sign_and_commit(&repo, &sig, &message, &tree, &parents, passphrase, report)?
+    sign_and_commit(&repo, &sig, &message, &tree, parents, passphrase, report)?
   } else {
-    repo.commit(Some("HEAD"), &sig, &sig, &message, &tree, &parents)?
+    repo.commit(Some("HEAD"), &sig, &sig, &message, &tree, parents)?
   };
 
-  let _ = run_hook(&repo, "post-commit", &[], report, ""); // best-effort
+  let _ = run_hook(&repo, "post-commit", report, ""); // best-effort
 
   Ok(oid)
 }
@@ -274,10 +262,10 @@ fn is_executable(path: &Path) -> bool {
 }
 
 /// `abort_message` turns a non-zero exit into an error; `""` means best-effort (`post-commit`).
+/// No hook here takes extra arguments, so there's no `args` parameter to thread through.
 fn run_hook(
   repo: &Repository,
   name: &str,
-  args: &[String],
   report: Reporter,
   abort_message: &str,
 ) -> Result<(), AppError> {
@@ -285,10 +273,7 @@ fn run_hook(
     return Ok(());
   };
 
-  let mut command = vec![path.to_string_lossy().into_owned()];
-  command.extend(args.iter().cloned());
-
-  let status = run(&command, report)?;
+  let status = run(&[path.to_string_lossy().into_owned()], report)?;
   if !status.success() && !abort_message.is_empty() {
     return Err(AppError::Step(abort_message.to_owned()));
   }
@@ -308,10 +293,12 @@ fn run_commit_msg_hook(
   let mut file = NamedTempFile::new()?;
   file.write_all(message.as_bytes())?;
   file.flush()?;
-  let msg_path = file.path().to_string_lossy().into_owned();
 
   let status = run(
-    &[path.to_string_lossy().into_owned(), msg_path.clone()],
+    &[
+      path.to_string_lossy().into_owned(),
+      file.path().to_string_lossy().into_owned(),
+    ],
     report,
   )?;
   if !status.success() {
@@ -320,7 +307,7 @@ fn run_commit_msg_hook(
     ));
   }
 
-  Ok(std::fs::read_to_string(&msg_path)?)
+  Ok(std::fs::read_to_string(file.path())?)
 }
 
 /// `commit_signed`, unlike `commit`, doesn't move any ref, so this does it by hand afterward.
@@ -381,7 +368,13 @@ fn sign_and_commit(
     if stderr.to_lowercase().contains("bad passphrase") {
       return Err(AppError::BadPassphrase);
     }
-    return Err(AppError::Step(format!("gpg signing failed: {stderr}")));
+    // gpg often repeats the same complaint across several lines; the last non-empty one is
+    // the most specific, and the only one worth showing.
+    let summary = stderr.lines().rev().find(|line| !line.trim().is_empty());
+    return Err(AppError::Step(format!(
+      "gpg signing failed: {}",
+      summary.unwrap_or("unknown error").trim()
+    )));
   }
 
   let signature = String::from_utf8(output.stdout)
