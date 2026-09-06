@@ -57,6 +57,60 @@ pub fn signing_enabled() -> Result<bool, AppError> {
   Ok(repo.config()?.get_bool("commit.gpgsign").unwrap_or(false))
 }
 
+/// The current branch's short name (e.g. `feature/123-add-thing`), or `None` on a detached
+/// HEAD or an unborn one (no commits yet).
+pub fn current_branch() -> Result<Option<String>, AppError> {
+  let repo = open()?;
+  let Ok(head) = repo.head() else {
+    return Ok(None);
+  };
+  if !head.is_branch() {
+    return Ok(None);
+  }
+  Ok(head.shorthand().ok().map(str::to_owned))
+}
+
+const ISSUE_PREFIXES: [&str; 4] = ["gh", "issue", "ticket", "bug"];
+
+/// Pulls a numeric issue id out of a branch name like `feature/123-add-thing`, `fix-142`,
+/// `issue/57`, or `GH-9`. `None` when nothing in it looks like one.
+pub fn issue_from_branch(branch: &str) -> Option<u32> {
+  branch
+    .split(|c: char| !c.is_alphanumeric())
+    .filter(|token| !token.is_empty())
+    .find_map(|token| {
+      token.parse().ok().or_else(|| {
+        let lower = token.to_lowercase();
+        ISSUE_PREFIXES
+          .iter()
+          .find_map(|prefix| lower.strip_prefix(prefix)?.parse().ok())
+      })
+    })
+}
+
+/// The first branch segment (before `/`, `-`, or `_`) that matches one of `known_types`,
+/// case-insensitively — e.g. `feat/123-thing` or `fix-142` both give a type at the front.
+pub fn type_from_branch<'a>(branch: &str, known_types: &[&'a str]) -> Option<&'a str> {
+  let first = branch.split(['/', '-', '_']).next()?;
+  known_types
+    .iter()
+    .find(|t| t.eq_ignore_ascii_case(first))
+    .copied()
+}
+
+/// Any branch segment (split on `/`, `-`, `_`) that matches one of `known_scopes`,
+/// case-insensitively — e.g. `fix/api-timeout` matches a configured `api` scope.
+pub fn scope_from_branch<'a>(branch: &str, known_scopes: &[&'a str]) -> Option<&'a str> {
+  branch
+    .split(['/', '-', '_'])
+    .find_map(|segment| {
+      known_scopes
+        .iter()
+        .find(|s| s.eq_ignore_ascii_case(segment))
+    })
+    .copied()
+}
+
 fn gpg_identity(repo: &Repository) -> Result<(String, Option<String>), AppError> {
   let config = repo.config()?;
   let program = config
@@ -211,7 +265,12 @@ pub fn commit(
 ) -> Result<git2::Oid, AppError> {
   let repo = open()?;
 
-  run_hook(&repo, "pre-commit", report, "pre-commit hook rejected the commit")?;
+  run_hook(
+    &repo,
+    "pre-commit",
+    report,
+    "pre-commit hook rejected the commit",
+  )?;
   let message = run_commit_msg_hook(&repo, message, report)?;
 
   let mut index = repo.index()?;
@@ -346,7 +405,11 @@ fn sign_and_commit(
       .arg("--passphrase-fd")
       .arg("0");
   }
-  command.arg("--detach-sign").arg("--armor").arg("-o").arg("-");
+  command
+    .arg("--detach-sign")
+    .arg("--armor")
+    .arg("-o")
+    .arg("-");
   if let Some(key) = &key {
     command.arg("--local-user").arg(key);
   }
@@ -427,6 +490,25 @@ mod tests {
       keyinfo_is_cached(cached),
       "the 5th token is `cached`, not the 4th (`idstr`)"
     );
+  }
+
+  #[test]
+  fn issue_type_and_scope_are_pulled_from_branch_segments() {
+    assert_eq!(issue_from_branch("feature/123-add-thing"), Some(123));
+    assert_eq!(issue_from_branch("fix-142"), Some(142));
+    assert_eq!(issue_from_branch("GH-9-cleanup"), Some(9));
+    assert_eq!(issue_from_branch("issue57"), Some(57));
+    assert_eq!(issue_from_branch("main"), None);
+
+    let types = ["feat", "fix", "chore"];
+    assert_eq!(type_from_branch("feat/123-thing", &types), Some("feat"));
+    assert_eq!(type_from_branch("fix-142", &types), Some("fix"));
+    assert_eq!(type_from_branch("random-branch", &types), None);
+
+    let scopes = ["api", "app"];
+    assert_eq!(scope_from_branch("fix/api-timeout", &scopes), Some("api"));
+    assert_eq!(scope_from_branch("feat_app_login", &scopes), Some("app"));
+    assert_eq!(scope_from_branch("fix/nothing-here", &scopes), None);
   }
 
   // No real gpg here on purpose: libgit2 never validates the signature string it's handed,

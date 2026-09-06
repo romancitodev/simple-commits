@@ -9,7 +9,7 @@ name = "tools"
 name = "cli"
 
 [[scopes]]
-name = "dadaw"
+name = "tui"
 
 [[scopes]]
-name = "tui"
+name = "git"
