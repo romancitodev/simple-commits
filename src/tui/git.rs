@@ -230,15 +230,7 @@ pub fn commit(
   let parents: Vec<&Commit> = parent.iter().collect();
 
   let oid = if repo.config()?.get_bool("commit.gpgsign").unwrap_or(false) {
-    sign_and_commit(
-      &repo,
-      &sig,
-      &message,
-      &tree,
-      &parents,
-      passphrase.unwrap_or(""),
-      report,
-    )?
+    sign_and_commit(&repo, &sig, &message, &tree, &parents, passphrase, report)?
   } else {
     repo.commit(Some("HEAD"), &sig, &sig, &message, &tree, &parents)?
   };
@@ -324,15 +316,18 @@ fn run_commit_msg_hook(
 }
 
 /// `commit_signed`, unlike `commit`, doesn't move any ref, so this does it by hand afterward.
-/// The commit content isn't secret and goes to `gpg` through a temp file; the passphrase is
-/// secret and goes through stdin (`--pinentry-mode loopback`), never touching disk.
+/// The commit content isn't secret and goes to `gpg` through a temp file. `passphrase` is
+/// secret and goes through stdin (`--pinentry-mode loopback`), never touching disk; when it's
+/// `None` (the [`passphrase_cached`] fast path), those flags are skipped entirely so `gpg`
+/// talks to `gpg-agent` on its own and reuses the cached passphrase instead of being handed
+/// an explicit empty one.
 fn sign_and_commit(
   repo: &Repository,
   sig: &git2::Signature,
   message: &str,
   tree: &git2::Tree,
   parents: &[&Commit],
-  passphrase: &str,
+  passphrase: Option<&str>,
   report: Reporter,
 ) -> Result<git2::Oid, AppError> {
   report("signing commit");
@@ -348,16 +343,15 @@ fn sign_and_commit(
   let (program, key) = gpg_identity(repo)?;
 
   let mut command = Command::new(&program);
-  command
-    .arg("--batch")
-    .arg("--pinentry-mode")
-    .arg("loopback")
-    .arg("--passphrase-fd")
-    .arg("0")
-    .arg("--detach-sign")
-    .arg("--armor")
-    .arg("-o")
-    .arg("-");
+  command.arg("--batch");
+  if passphrase.is_some() {
+    command
+      .arg("--pinentry-mode")
+      .arg("loopback")
+      .arg("--passphrase-fd")
+      .arg("0");
+  }
+  command.arg("--detach-sign").arg("--armor").arg("-o").arg("-");
   if let Some(key) = &key {
     command.arg("--local-user").arg(key);
   }
@@ -369,7 +363,9 @@ fn sign_and_commit(
     .stderr(Stdio::piped())
     .spawn()?;
 
-  writeln!(child.stdin.take().expect("stdin is piped"), "{passphrase}")?;
+  if let Some(passphrase) = passphrase {
+    writeln!(child.stdin.take().expect("stdin is piped"), "{passphrase}")?;
+  }
 
   let output = child.wait_with_output()?;
   if !output.status.success() {
