@@ -4,35 +4,17 @@ use crate::{
   tui::{git, style},
 };
 use log::info;
-use nobubbles::inline::{confirm, task};
+use nobubbles::inline::{confirm, password, task};
 
 /// Step 9: Execute/Preview Commit
-///
-/// Builds the final commit message and either executes it or shows a preview.
-/// The behavior depends on the `skip_preview` configuration.
 pub fn execute_commit(pipeline: &mut Pipeline) -> Result<(), AppError> {
   let commit = pipeline.state.commit.clone().build().unwrap();
 
-  let command = {
-    let base = ["git", "commit", "-m", &commit.0]
-      .iter()
-      .map(|s| String::from(*s))
-      .collect::<Vec<_>>();
-
-    if let Some(cfg) = &pipeline.config.git {
-      cfg.commit_template.as_ref().map_or_else(
-        || base,
-        |cfg| {
-          cfg
-            .iter()
-            .map(|msg| msg.replace("{{message}}", &commit.0))
-            .collect::<Vec<_>>()
-        },
-      )
-    } else {
-      base
-    }
-  };
+  let template = pipeline
+    .config
+    .git
+    .as_ref()
+    .and_then(|cfg| cfg.commit_template.clone());
 
   let skip_preview = pipeline
     .config
@@ -45,7 +27,20 @@ pub fn execute_commit(pipeline: &mut Pipeline) -> Result<(), AppError> {
       .initial(true)
       .ask()?;
 
-  if execute {
+  if !execute {
+    nobubbles::inline::log::step("Commit preview");
+    nobubbles::inline::log::block(&style::preview_card(&commit.0));
+    info!(target: "tui::steps::execute", "commit preview shown");
+    return Ok(());
+  }
+
+  // an arbitrary user command, not necessarily even `git commit`, so it stays shell-out
+  if let Some(template) = template {
+    let command = template
+      .iter()
+      .map(|msg| msg.replace("{{message}}", &commit.0))
+      .collect::<Vec<_>>();
+
     let status = task(style::subtitle("Committing"), move |report| {
       git::run(&command, report)
     })??;
@@ -57,11 +52,42 @@ pub fn execute_commit(pipeline: &mut Pipeline) -> Result<(), AppError> {
     }
 
     info!(target: "tui::steps::execute", "commit executed (status: {status})");
-  } else {
-    nobubbles::inline::log::step("Commit preview");
-    nobubbles::inline::log::block(&style::preview_card(&commit.0));
+    return Ok(());
+  }
 
-    info!(target: "tui::steps::execute", "commit preview shown");
+  let needs_passphrase = git::signing_enabled()?
+    && !task(style::subtitle("Checking GPG"), |report| {
+      report.say("waking up gpg-agent");
+      let cached = git::passphrase_cached();
+      report.say("gpg-agent ok");
+      cached
+    })??;
+  let mut passphrase = needs_passphrase
+    .then(|| password(style::subtitle("GPG passphrase")).ask())
+    .transpose()?;
+
+  const MAX_ATTEMPTS: u8 = 3;
+  for attempt in 1..=MAX_ATTEMPTS {
+    let message = commit.0.clone();
+    let pass = passphrase.clone();
+    match task(style::subtitle("Committing"), move |report| {
+      git::commit(&message, pass.as_deref(), report)
+    })? {
+      Ok(()) => {
+        nobubbles::inline::log::success("commit created");
+        info!(target: "tui::steps::execute", "commit executed");
+        break;
+      }
+      Err(AppError::BadPassphrase) if attempt < MAX_ATTEMPTS => {
+        nobubbles::inline::log::warn("wrong passphrase, try again");
+        passphrase = Some(password(style::subtitle("GPG passphrase")).ask()?);
+      }
+      Err(err) => {
+        nobubbles::inline::log::error(err.to_string());
+        info!(target: "tui::steps::execute", "commit failed: {err}");
+        break;
+      }
+    }
   }
 
   Ok(())
