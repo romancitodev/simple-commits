@@ -117,11 +117,19 @@ pub fn passphrase_cached() -> Result<bool, AppError> {
     return Ok(false);
   };
 
-  let Ok(output) = Command::new("gpg-connect-agent")
-    .arg(format!("KEYINFO {keygrip}"))
-    .arg("/bye")
-    .output()
-  else {
+  // A bare "gpg-connect-agent" resolves through `PATH`, which on a machine with more than one
+  // GnuPG install can land on a different one than `gpg.program` — talking to a different
+  // `gpg-agent`. Try the binary next to `program` first, then fall back to `PATH`.
+  let keyinfo = format!("KEYINFO {keygrip}");
+  let query = |gpg_connect_agent: &Path| {
+    Command::new(gpg_connect_agent)
+      .arg(&keyinfo)
+      .arg("/bye")
+      .output()
+  };
+  let sibling = Path::new(&program).with_file_name("gpg-connect-agent");
+
+  let Ok(output) = query(&sibling).or_else(|_| query(Path::new("gpg-connect-agent"))) else {
     return Ok(false);
   };
 
