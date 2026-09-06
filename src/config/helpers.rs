@@ -48,13 +48,13 @@ pub fn load_config(path: Option<PathBuf>, config: &mut AppConfig) -> ConfigPaths
 
   let local_path = current_dir().map(|path| path.join("sc.toml"));
 
-  if let Ok(local_path_ok) = &local_path {
-    if let Ok(content) = std::fs::read_to_string(local_path_ok) {
-      let mut local_config: AppConfig = toml::from_str(&content).unwrap();
-      config.config.clone_from(local_path_ok);
-      config.scopes = Some(Scope::default());
-      config.merge(&mut local_config);
-    }
+  if let Ok(local_path_ok) = &local_path
+    && let Ok(content) = std::fs::read_to_string(local_path_ok)
+  {
+    let mut local_config: AppConfig = toml::from_str(&content).unwrap();
+    config.config.clone_from(local_path_ok);
+    config.scopes = Some(Scope::default());
+    config.merge(&mut local_config);
   }
 
   (global_path, local_path.ok())
