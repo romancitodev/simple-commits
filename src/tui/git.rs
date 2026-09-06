@@ -211,7 +211,13 @@ pub fn commit(
 ) -> Result<git2::Oid, AppError> {
   let repo = open()?;
 
-  run_hook(&repo, "pre-commit", &[], report, "pre-commit hook rejected the commit")?;
+  run_hook(
+    &repo,
+    "pre-commit",
+    &[],
+    report,
+    "pre-commit hook rejected the commit",
+  )?;
   let message = run_commit_msg_hook(&repo, message, report)?;
 
   let mut index = repo.index()?;
@@ -420,7 +426,10 @@ mod tests {
     assert!(!keyinfo_is_cached(not_cached));
 
     let cached = "S KEYINFO 73760AA1 D - - 1 P - - -\nOK\n";
-    assert!(keyinfo_is_cached(cached), "the 5th token is `cached`, not the 4th (`idstr`)");
+    assert!(
+      keyinfo_is_cached(cached),
+      "the 5th token is `cached`, not the 4th (`idstr`)"
+    );
   }
 
   // No real gpg here on purpose: libgit2 never validates the signature string it's handed,
@@ -458,10 +467,16 @@ mod tests {
       .unwrap()
       .unwrap()
       .to_owned();
-    repo.reference(&target, oid, true, "commit (signed)").unwrap();
+    repo
+      .reference(&target, oid, true, "commit (signed)")
+      .unwrap();
 
     let head = repo.head().unwrap().peel_to_commit().unwrap();
-    assert_eq!(head.id(), oid, "HEAD should follow the ref onto a repo with no prior commits");
+    assert_eq!(
+      head.id(),
+      oid,
+      "HEAD should follow the ref onto a repo with no prior commits"
+    );
     assert_eq!(head.message().unwrap(), "test commit");
     assert_eq!(
       std::str::from_utf8(&head.header_field_bytes("gpgsig").unwrap()).unwrap(),
