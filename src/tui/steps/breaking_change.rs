@@ -1,15 +1,15 @@
-use crate::{errors::AppError, reimpl::Pipeline};
-use cliclack::{confirm, input};
+use crate::{errors::AppError, reimpl::Pipeline, tui::style};
 use log::info;
+use nobubbles::inline::{confirm, input};
 
 /// Step 3: Breaking Change Confirmation
 ///
 /// Prompts the user to confirm if this commit is a breaking change.
 /// Updates the pipeline state with the breaking change flag.
 pub fn ask_breaking_change(pipeline: &mut Pipeline) -> Result<bool, AppError> {
-    let is_breaking = confirm("Is this a breaking change?")
-        .initial_value(false)
-        .interact()?;
+    let is_breaking = confirm(style::subtitle("Is this a breaking change?"))
+        .initial(false)
+        .ask()?;
 
     pipeline
         .state
@@ -31,9 +31,8 @@ pub fn ask_breaking_message(pipeline: &mut Pipeline) -> Result<(), AppError> {
         return Ok(());
     }
 
-    let breaking_change_msg: String = input("Expand the breaking change description")
-        .required(false)
-        .interact()?;
+    let breaking_change_msg: String =
+        input(style::subtitle("Expand the breaking change description")).ask()?;
 
     let breaking_change_msg = (!breaking_change_msg.is_empty()).then_some(breaking_change_msg);
 

@@ -1,6 +1,6 @@
-use crate::{errors::AppError, gen::EMOJIS, reimpl::Pipeline};
-use cliclack::select;
+use crate::{errors::AppError, gitmoji::EMOJIS, reimpl::Pipeline, tui::style};
 use log::info;
+use nobubbles::inline::select;
 
 /// Step 5: Emoji Selection
 ///
@@ -18,15 +18,20 @@ pub fn select_emoji(pipeline: &mut Pipeline) -> Result<(), AppError> {
         return Ok(());
     }
 
-    let emojis_mapped = EMOJIS.map(|d| (d.emoji, format!("{} {}", d.emoji, d.description), d.name));
+    let mut emojis = select(style::subtitle("Select an emoji (optional)"))
+        .items(EMOJIS.map(|e| format!("{} {}", e.emoji, e.description)))
+        .max_rows(8);
 
-    let emoji = select("Select an emoji (optional)")
-        .items(&emojis_mapped)
-        .max_rows(8)
-        .filter_mode()
-        .interact()?;
+    for (idx, emoji) in EMOJIS.iter().enumerate() {
+        if !emoji.name.is_empty() {
+            emojis = emojis.note(idx, emoji.name);
+        }
+    }
 
-    let emoji = (!emoji.is_empty() && emoji != "❌").then_some(emoji.to_owned());
+    let idx = emojis.strict().ask()?;
+    let selected = EMOJIS[idx].clone();
+
+    let emoji = (idx != 0).then_some(selected.emoji.to_owned());
     pipeline.state.commit.set_emoji(emoji.clone());
 
     info!(target: "tui::steps::emoji", "selected emoji: {emoji:?}");

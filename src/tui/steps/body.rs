@@ -1,13 +1,16 @@
-use crate::{errors::AppError, reimpl::Pipeline};
-use cliclack::input;
+use crate::{reimpl::Pipeline, tui::style};
 use log::info;
+use nobubbles::inline::input;
 
 /// Step 7: Body/Description Input
 ///
 /// Prompts the user to enter an optional multiline body/description for the commit.
 /// This provides additional context beyond the title.
-pub fn input_body(Pipeline { state, .. }: &mut Pipeline) -> Result<(), AppError> {
-    let body: String = input("Body").multiline().required(false).interact()?;
+pub fn input_body(Pipeline { state, .. }: &mut Pipeline) {
+    let body: String = input(style::subtitle("Body"))
+        .multiline()
+        .ask()
+        .expect("Failed to read body input");
 
     state.commit.set_description(Some(body.clone()));
 
@@ -16,6 +19,4 @@ pub fn input_body(Pipeline { state, .. }: &mut Pipeline) -> Result<(), AppError>
         "body length: {} chars",
         body.len()
     );
-
-    Ok(())
 }

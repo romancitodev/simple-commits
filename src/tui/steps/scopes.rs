@@ -1,6 +1,10 @@
-use crate::{errors::AppError, reimpl::Pipeline, tui::structs::InnerScope};
-use cliclack::select;
+use crate::{
+    errors::AppError,
+    reimpl::Pipeline,
+    tui::{structs::InnerScope, style},
+};
 use log::{debug, error, info};
+use nobubbles::inline::select;
 
 /// Step 2: Scope Selection
 ///
@@ -12,24 +16,19 @@ pub fn select_scope(pipeline: &mut Pipeline) -> Result<(), AppError> {
         .scopes
         .insert(0, InnerScope::new("none".to_owned(), None));
 
-    let mapped_scopes = scopes
-        .scopes()
-        .iter()
-        .map(|scope| {
-            (
-                scope.name(),
-                scope.name(),
-                scope.description().map_or(String::new(), Clone::clone),
-            )
-        })
-        .collect::<Vec<_>>();
+    let mut picker = select(style::subtitle("Select a scope"))
+        .items(scopes.scopes().iter().map(|scope| scope.name().to_owned()));
 
-    let scope = select("Select a scope")
-        .items(&mapped_scopes)
-        .initial_value("none")
-        .interact()?;
+    for (idx, scope) in scopes.scopes().iter().enumerate() {
+        if let Some(description) = scope.description() {
+            picker = picker.note(idx, description.clone());
+        }
+    }
 
-    let scope = (!scope.is_empty() && scope != "none").then_some(scope.to_owned());
+    let idx = picker.strict().ask()?;
+    let selected = scopes.scopes()[idx].name().to_owned();
+
+    let scope = (idx != 0).then_some(selected);
     pipeline.state.commit.set_scope(scope.clone());
 
     // Add new scope to config if it doesn't exist

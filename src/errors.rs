@@ -10,4 +10,6 @@ pub enum AppError {
     IO(#[from] std::io::Error),
     #[error("Error on Step: {0:?}")]
     Step(String),
+    #[error("Error at nobbubbles level: {0:?}")]
+    Nobubbles(#[from] eyre::Report),
 }

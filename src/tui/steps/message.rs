@@ -1,6 +1,10 @@
-use crate::{errors::AppError, reimpl::Pipeline, tui::helpers::valid_length};
-use cliclack::input;
+use crate::{
+    errors::AppError,
+    reimpl::Pipeline,
+    tui::{helpers::valid_length, style},
+};
 use log::info;
+use nobubbles::inline::input;
 
 /// Step 6: Title Input
 ///
@@ -15,12 +19,9 @@ pub fn input_title(pipeline: &mut Pipeline) -> Result<(), AppError> {
         return Ok(());
     }
 
-    let msg: String = input("Enter a brief title of the commit")
-        .required(true)
-        .validate_interactively(|x: &String| {
-            valid_length(x, 5, "The commit must have at least 5 characters")
-        })
-        .interact()?;
+    let msg: String = input(style::subtitle("Enter a brief title of the commit"))
+        .validate(|x: &str| valid_length(x, 5, "The commit must have at least 5 characters"))
+        .ask()?;
 
     pipeline.state.commit.set_title(Some(msg.clone()));
     info!(target: "tui::steps::title", "entered title: {msg}");

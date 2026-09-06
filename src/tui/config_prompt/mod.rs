@@ -1,24 +1,28 @@
 use crate::config::cli::AppConfig;
-use cliclack::{
-    intro,
-    log::{info, step},
-    outro,
-};
+use crate::errors::AppError;
+// use nobubbles::inline::{
+//     intro,
+//     log::{info, step},
+//     outro,
+// };
 
-pub fn init(AppConfig { config, .. }: AppConfig) -> Result<(), std::io::Error> {
-    intro("Simple Commit")?;
+use nobubbles::inline::log::*;
+use nobubbles::inline::*;
 
-    step("Setting up configuration files")?;
+pub fn init(AppConfig { config, .. }: AppConfig) -> Result<(), AppError> {
+    let session = intro("Simple Commit")?;
 
-    info("")?;
-    info("Succesfully created.")?;
-    info(format!("Path: {}", config.display()))?;
-    info("")?;
+    step("Setting up configuration files");
 
-    outro(concat!(
+    info("");
+    info("Succesfully created.");
+    info(format!("Path: {}", config.display()));
+    info("");
+
+    outro(session).with(concat!(
         "In case of issues, please report it to https://github.com/romancitodev/simple-commits\n",
         "\u{2764}  Thanks for use this tool!",
-    ))?;
+    ));
 
     Ok(())
 }
