@@ -25,6 +25,16 @@ pub fn preview_card(message: &str) -> Block {
     .border_color(ACCENT)
 }
 
+/// The same box, once the commit is real: green instead of the accent, the way `styles.rs`
+/// swaps a theme's accent to signal state rather than changing the shape.
+pub fn success_card(message: &str) -> Block {
+  rimel::text(message)
+    .px(2)
+    .py(1)
+    .rounded()
+    .border_color(palette::GREEN)
+}
+
 /// One-time banner printed above the whole session, before `intro` puts the terminal in raw
 /// mode.
 pub fn banner() {

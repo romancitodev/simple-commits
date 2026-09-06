@@ -42,11 +42,12 @@ pub fn execute_commit(pipeline: &mut Pipeline) -> Result<(), AppError> {
       .collect::<Vec<_>>();
 
     let status = task(style::subtitle("Committing"), move |report| {
-      git::run(&command, report)
+      git::run(&command, &|line| report.say(line))
     })??;
 
     if status.success() {
       nobubbles::inline::log::success("commit created");
+      nobubbles::inline::log::block(&style::success_card(&commit.0));
     } else {
       nobubbles::inline::log::error(format!("git exited with {status}"));
     }
@@ -62,31 +63,42 @@ pub fn execute_commit(pipeline: &mut Pipeline) -> Result<(), AppError> {
       report.say("gpg-agent ok");
       cached
     })??;
-  let mut passphrase = needs_passphrase
-    .then(|| password(style::subtitle("GPG passphrase")).ask())
-    .transpose()?;
 
-  const MAX_ATTEMPTS: u8 = 3;
-  for attempt in 1..=MAX_ATTEMPTS {
+  if needs_passphrase {
+    // The whole commit happens inside `validate`, on submit: a wrong passphrase refuses the
+    // answer and the same prompt stays up asking again, instead of a fresh "GPG passphrase"
+    // / "Committing" pair stacking up in the transcript for every attempt.
     let message = commit.0.clone();
-    let pass = passphrase.clone();
-    match task(style::subtitle("Committing"), move |report| {
-      git::commit(&message, pass.as_deref(), report)
-    })? {
-      Ok(()) => {
-        nobubbles::inline::log::success("commit created");
-        info!(target: "tui::steps::execute", "commit executed");
-        break;
-      }
-      Err(AppError::BadPassphrase) if attempt < MAX_ATTEMPTS => {
-        nobubbles::inline::log::warn("wrong passphrase, try again");
-        passphrase = Some(password(style::subtitle("GPG passphrase")).ask()?);
-      }
-      Err(err) => {
-        nobubbles::inline::log::error(err.to_string());
-        info!(target: "tui::steps::execute", "commit failed: {err}");
-        break;
-      }
+    password(style::subtitle("GPG passphrase"))
+      .invisible()
+      .validate(move |pass| {
+        git::commit(&message, Some(pass), &|_| {})
+          .map(|_| ())
+          .map_err(|err| match err {
+            AppError::BadPassphrase => "wrong passphrase, try again".to_owned(),
+            other => other.to_string(),
+          })
+      })
+      .ask()?;
+
+    nobubbles::inline::log::success("commit created");
+    nobubbles::inline::log::block(&style::success_card(&commit.0));
+    info!(target: "tui::steps::execute", "commit executed");
+    return Ok(());
+  }
+
+  let message = commit.0.clone();
+  match task(style::subtitle("Committing"), move |report| {
+    git::commit(&message, None, &|line| report.say(line))
+  })? {
+    Ok(_) => {
+      nobubbles::inline::log::success("commit created");
+      nobubbles::inline::log::block(&style::success_card(&commit.0));
+      info!(target: "tui::steps::execute", "commit executed");
+    }
+    Err(err) => {
+      nobubbles::inline::log::error(err.to_string());
+      info!(target: "tui::steps::execute", "commit failed: {err}");
     }
   }
 

@@ -4,7 +4,6 @@
 use crate::errors::AppError;
 use git2::{Commit, Repository, Status, StatusOptions};
 use log::info;
-use nobubbles::inline::Report;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitStatus, Stdio};
@@ -12,7 +11,11 @@ use std::sync::mpsc::{Sender, channel};
 use std::thread;
 use tempfile::NamedTempFile;
 
-pub fn run(command: &[String], report: &Report) -> std::io::Result<ExitStatus> {
+/// Where progress lines go: `nobubbles::inline::Report::say` from a `task`, or `|_| {}` when
+/// there's no live view to write into (a synchronous `validate`, say).
+pub type Reporter<'a> = &'a dyn Fn(&str);
+
+pub fn run(command: &[String], report: Reporter) -> std::io::Result<ExitStatus> {
   info!(target: "tui::git", "running command: {:?}", command);
   let (program, args) = command.split_first().expect("command can't be empty");
 
@@ -28,7 +31,7 @@ pub fn run(command: &[String], report: &Report) -> std::io::Result<ExitStatus> {
   drop(tx); // last senders live in the reader threads, so `rx` ends when both pipes close
 
   for line in rx {
-    report.say(line);
+    report(&line);
   }
 
   child.wait()
@@ -122,13 +125,17 @@ pub fn passphrase_cached() -> Result<bool, AppError> {
     return Ok(false);
   };
 
-  Ok(
-    String::from_utf8_lossy(&output.stdout)
-      .lines()
-      .find_map(|line| line.strip_prefix("S KEYINFO "))
-      .and_then(|rest| rest.split_whitespace().nth(3))
-      .is_some_and(|cached| cached == "1"),
-  )
+  Ok(keyinfo_is_cached(&String::from_utf8_lossy(&output.stdout)))
+}
+
+/// A `KEYINFO` line looks like `S KEYINFO <keygrip> <type> <serialno> <idstr> <cached> ...`,
+/// so `cached` is the fifth token, not the fourth (`idstr`, which is almost always `-`).
+fn keyinfo_is_cached(response: &str) -> bool {
+  response
+    .lines()
+    .find_map(|line| line.strip_prefix("S KEYINFO "))
+    .and_then(|rest| rest.split_whitespace().nth(4))
+    .is_some_and(|cached| cached == "1")
 }
 
 pub struct Change {
@@ -196,8 +203,12 @@ pub fn stage(paths: &[String]) -> Result<(), AppError> {
 }
 
 /// `passphrase` is only needed when [`signing_enabled`] is on and [`passphrase_cached`] came
-/// back false. Pass `None` otherwise.
-pub fn commit(message: &str, passphrase: Option<&str>, report: &Report) -> Result<(), AppError> {
+/// back false. Pass `None` otherwise. Returns the new commit's id.
+pub fn commit(
+  message: &str,
+  passphrase: Option<&str>,
+  report: Reporter,
+) -> Result<git2::Oid, AppError> {
   let repo = open()?;
 
   run_hook(&repo, "pre-commit", &[], report, "pre-commit hook rejected the commit")?;
@@ -212,7 +223,7 @@ pub fn commit(message: &str, passphrase: Option<&str>, report: &Report) -> Resul
   };
   let parents: Vec<&Commit> = parent.iter().collect();
 
-  if repo.config()?.get_bool("commit.gpgsign").unwrap_or(false) {
+  let oid = if repo.config()?.get_bool("commit.gpgsign").unwrap_or(false) {
     sign_and_commit(
       &repo,
       &sig,
@@ -221,14 +232,14 @@ pub fn commit(message: &str, passphrase: Option<&str>, report: &Report) -> Resul
       &parents,
       passphrase.unwrap_or(""),
       report,
-    )?;
+    )?
   } else {
-    repo.commit(Some("HEAD"), &sig, &sig, &message, &tree, &parents)?;
-  }
+    repo.commit(Some("HEAD"), &sig, &sig, &message, &tree, &parents)?
+  };
 
   let _ = run_hook(&repo, "post-commit", &[], report, ""); // best-effort
 
-  Ok(())
+  Ok(oid)
 }
 
 fn hooks_dir(repo: &Repository) -> PathBuf {
@@ -261,7 +272,7 @@ fn run_hook(
   repo: &Repository,
   name: &str,
   args: &[String],
-  report: &Report,
+  report: Reporter,
   abort_message: &str,
 ) -> Result<(), AppError> {
   let Some(path) = hook_path(repo, name) else {
@@ -282,7 +293,7 @@ fn run_hook(
 fn run_commit_msg_hook(
   repo: &Repository,
   message: &str,
-  report: &Report,
+  report: Reporter,
 ) -> Result<String, AppError> {
   let Some(path) = hook_path(repo, "commit-msg") else {
     return Ok(message.to_owned());
@@ -316,9 +327,9 @@ fn sign_and_commit(
   tree: &git2::Tree,
   parents: &[&Commit],
   passphrase: &str,
-  report: &Report,
-) -> Result<(), AppError> {
-  report.say("signing commit");
+  report: Reporter,
+) -> Result<git2::Oid, AppError> {
+  report("signing commit");
 
   let buf = repo.commit_create_buffer(sig, sig, message, tree, parents)?;
   let content = std::str::from_utf8(&buf)
@@ -375,8 +386,8 @@ fn sign_and_commit(
     .to_owned();
   repo.reference(&target, oid, true, "commit (signed)")?;
 
-  report.say("commit signed");
-  Ok(())
+  report("commit signed");
+  Ok(oid)
 }
 
 #[cfg(test)]
@@ -401,6 +412,15 @@ mod tests {
       start.elapsed().as_secs() < 2,
       "the cache check should be near-instant, not shell out to a real sign attempt"
     );
+  }
+
+  #[test]
+  fn keyinfo_parses_the_cached_flag_from_the_right_field() {
+    let not_cached = "S KEYINFO 73760AA1 D - - - P - - -\nOK\n";
+    assert!(!keyinfo_is_cached(not_cached));
+
+    let cached = "S KEYINFO 73760AA1 D - - 1 P - - -\nOK\n";
+    assert!(keyinfo_is_cached(cached), "the 5th token is `cached`, not the 4th (`idstr`)");
   }
 
   // No real gpg here on purpose: libgit2 never validates the signature string it's handed,

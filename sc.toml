@@ -7,3 +7,9 @@ name = "tools"
 
 [[scopes]]
 name = "cli"
+
+[[scopes]]
+name = "dadaw"
+
+[[scopes]]
+name = "tui"
