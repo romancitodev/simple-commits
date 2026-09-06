@@ -89,7 +89,7 @@ pub fn issue_from_branch(branch: &str) -> Option<u32> {
 }
 
 /// The first branch segment (before `/`, `-`, or `_`) that matches one of `known_types`,
-/// case-insensitively — e.g. `feat/123-thing` or `fix-142` both give a type at the front.
+/// case-insensitively, e.g. `feat/123-thing` or `fix-142` both give a type at the front.
 pub fn type_from_branch<'a>(branch: &str, known_types: &[&'a str]) -> Option<&'a str> {
   let first = branch.split(['/', '-', '_']).next()?;
   known_types
@@ -151,7 +151,7 @@ pub fn passphrase_cached() -> Result<bool, AppError> {
   };
 
   // A bare "gpg-connect-agent" resolves through `PATH`, which on a machine with more than one
-  // GnuPG install can land on a different one than `gpg.program` — talking to a different
+  // GnuPG install can land on a different one than `gpg.program`, talking to a different
   // `gpg-agent`. Try the binary next to `program` first, then fall back to `PATH`.
   let keyinfo = format!("KEYINFO {keygrip}");
   let query = |gpg_connect_agent: &Path| {

@@ -30,8 +30,7 @@ impl std::fmt::Display for Emoji {
   }
 }
 
-pub const EMOJIS: [Emoji; 74] = [
-  Emoji::new("❌", "", "(none)"),
+pub const EMOJIS: [Emoji; 73] = [
   Emoji::new("🎨", "art", "Improve structure / format of the code."),
   Emoji::new("⚡️", "zap", "Improve performance."),
   Emoji::new("🔥", "fire", "Remove code or files."),

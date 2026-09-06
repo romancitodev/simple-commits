@@ -1,6 +1,6 @@
 use nobubbles::rimel::{self, Block, Color, Ramp, colorgrad, palette};
 
-/// Deep green to a bright "added line" green to pale mint — the colors of a commit, for the
+/// Deep green to a bright "added line" green to pale mint, the colors of a commit, for the
 /// banner's app name.
 fn commit_green() -> Ramp {
   Ramp::new(
@@ -51,7 +51,7 @@ pub fn success_card(message: &str) -> Block {
 /// mode.
 pub fn banner() {
   // `.px()` pads *after* the gradient is painted, so the padding cells would miss it and
-  // break the pill — spaces baked into the text itself sit inside the painted rows instead.
+  // break the pill, so spaces baked into the text itself sit inside the painted rows instead.
   let badge = rimel::text(" simple-commits ")
     .fg(palette::BASE)
     .bold()

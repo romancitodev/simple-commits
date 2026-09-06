@@ -6,7 +6,7 @@ use crate::{
 use log::info;
 use nobubbles::inline::{input, select};
 
-/// A commit rarely closes the issue it's on right away — most commits on a branch just work
+/// A commit rarely closes the issue it's on right away, most commits on a branch just work
 /// towards it. `Refs` (a plain mention, no auto-close) is the safe default; `Closes` is an
 /// explicit choice for the one commit that actually resolves it.
 const ISSUE_TRAILERS: [&str; 3] = ["Refs", "Closes", "Skip"];
@@ -24,7 +24,7 @@ pub fn input_footer(pipeline: &mut Pipeline) -> Result<(), AppError> {
   let trailer = issue
     .map(|id| {
       let choice = select(style::subtitle(format!(
-        "Detected issue #{id} on this branch — reference it as?"
+        "Detected issue #{id} on this branch, reference it as?"
       )))
       .items(ISSUE_TRAILERS)
       .initial(0)

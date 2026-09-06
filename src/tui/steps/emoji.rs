@@ -20,6 +20,7 @@ pub fn select_emoji(pipeline: &mut Pipeline) -> Result<(), AppError> {
 
   let mut emojis = select(style::subtitle("Select an emoji (optional)"))
     .items(EMOJIS.map(|e| format!("{} {}", e.emoji, e.description)))
+    .skip("[skipped]")
     .max_rows(8)
     .filter();
 
@@ -29,10 +30,7 @@ pub fn select_emoji(pipeline: &mut Pipeline) -> Result<(), AppError> {
     }
   }
 
-  let idx = emojis.strict().ask()?;
-  let selected = EMOJIS[idx].clone();
-
-  let emoji = (idx != 0).then_some(selected.emoji.to_owned());
+  let emoji = emojis.ask()?.map(|idx| EMOJIS[idx].emoji.to_owned());
   pipeline.state.commit.set_emoji(emoji.clone());
 
   info!(target: "tui::steps::emoji", "selected emoji: {emoji:?}");
