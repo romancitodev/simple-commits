@@ -1,4 +1,4 @@
-# Simple commits ✨
+# `Simple commits` ✨
 
 <div align="center">
 
