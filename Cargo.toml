@@ -4,7 +4,7 @@ description = "A little CLI written in rust to improve your dirty commits into c
 repository = "https://github.com/romancitodev/simple-commits"
 version = "1.0.2"
 edition = "2024"
-license = "MIT"
+license = "Apache-2.0"
 
 [package.metadata.wix]
 upgrade-guid = "C20E12CB-E616-45DF-8B01-11541D65C6CE"
