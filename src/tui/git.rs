@@ -98,19 +98,6 @@ pub fn type_from_branch<'a>(branch: &str, known_types: &[&'a str]) -> Option<&'a
     .copied()
 }
 
-/// Any branch segment (split on `/`, `-`, `_`) that matches one of `known_scopes`,
-/// case-insensitively — e.g. `fix/api-timeout` matches a configured `api` scope.
-pub fn scope_from_branch<'a>(branch: &str, known_scopes: &[&'a str]) -> Option<&'a str> {
-  branch
-    .split(['/', '-', '_'])
-    .find_map(|segment| {
-      known_scopes
-        .iter()
-        .find(|s| s.eq_ignore_ascii_case(segment))
-    })
-    .copied()
-}
-
 fn gpg_identity(repo: &Repository) -> Result<(String, Option<String>), AppError> {
   let config = repo.config()?;
   let program = config
@@ -493,7 +480,7 @@ mod tests {
   }
 
   #[test]
-  fn issue_type_and_scope_are_pulled_from_branch_segments() {
+  fn issue_and_type_are_pulled_from_branch_segments() {
     assert_eq!(issue_from_branch("feature/123-add-thing"), Some(123));
     assert_eq!(issue_from_branch("fix-142"), Some(142));
     assert_eq!(issue_from_branch("GH-9-cleanup"), Some(9));
@@ -504,11 +491,6 @@ mod tests {
     assert_eq!(type_from_branch("feat/123-thing", &types), Some("feat"));
     assert_eq!(type_from_branch("fix-142", &types), Some("fix"));
     assert_eq!(type_from_branch("random-branch", &types), None);
-
-    let scopes = ["api", "app"];
-    assert_eq!(scope_from_branch("fix/api-timeout", &scopes), Some("api"));
-    assert_eq!(scope_from_branch("feat_app_login", &scopes), Some("app"));
-    assert_eq!(scope_from_branch("fix/nothing-here", &scopes), None);
   }
 
   // No real gpg here on purpose: libgit2 never validates the signature string it's handed,

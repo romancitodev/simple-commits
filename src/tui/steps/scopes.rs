@@ -1,8 +1,4 @@
-use crate::{
-  errors::AppError,
-  reimpl::Pipeline,
-  tui::{git, style},
-};
+use crate::{errors::AppError, reimpl::Pipeline, tui::style};
 use log::{debug, error, info};
 use nobubbles::inline::autocomplete;
 
@@ -12,18 +8,6 @@ use nobubbles::inline::autocomplete;
 /// one to add it. Leaving it empty (or typing "none") means no scope.
 pub fn select_scope(pipeline: &mut Pipeline) -> Result<(), AppError> {
   let scopes = pipeline.config.scopes.clone().unwrap_or_default();
-  let names: Vec<&str> = scopes.scopes().iter().map(|s| s.name()).collect();
-
-  // The autocomplete field takes only a `'static` placeholder, so a branch match (borrowed
-  // from a freshly-read branch name) can't be preloaded into it — surfaced as a log line
-  // instead, for the user to type themselves.
-  if let Some(scope) = git::current_branch()
-    .ok()
-    .flatten()
-    .and_then(|branch| git::scope_from_branch(&branch, &names).map(str::to_owned))
-  {
-    nobubbles::inline::log::info(format!("branch suggests scope '{scope}'"));
-  }
 
   let mut picker = autocomplete(style::subtitle("Select a scope"))
     .items(scopes.scopes().iter().map(|scope| scope.name().to_owned()))
