@@ -1,22 +1,50 @@
-use crate::config::get_config;
+use crate::{config::get_config, errors::AppError};
 
 pub mod config_prompt;
+pub mod git;
 pub mod helpers;
 pub mod steps;
 pub mod structs;
-pub mod widgets;
+pub mod style;
 
 /// initialize the configuration and setup the steps
 pub fn init() {
     let (config, command) = get_config();
-    match command {
-        Some(_) => {
-            _ = config_prompt::init(config);
-        }
-        None => {
-            _ = steps::init(config);
-        }
+
+    let result = match command {
+        Some(_) => config_prompt::init(config),
+        None => steps::init(config),
+    };
+
+    if let Err(err) = result {
+        report_error(&err);
     }
+}
+
+/// Surfaces a pipeline error to the user, unless it's already explained itself.
+///
+/// A few `AppError`s are not really failures:
+/// - `AppError::Step` is how a step halts the pipeline *after* already printing a friendly
+///   reason (nothing to commit, nothing picked, etc.) — printing anything more on top of
+///   that would just be noise.
+/// - Ctrl+C surfaces as `AppError::Nobubbles` wrapping nobubbles' `Cancelled` — the user
+///   asked to stop, that's not a bug either.
+///
+/// Everything else is unexpected, so it gets printed and the process exits non-zero instead
+/// of failing silently.
+fn report_error(err: &AppError) {
+    if matches!(err, AppError::Step(_)) {
+        return;
+    }
+
+    if let AppError::Nobubbles(report) = err
+        && report.downcast_ref::<nobubbles::app::Cancelled>().is_some()
+    {
+        return;
+    }
+
+    nobubbles::inline::log::error(err.to_string());
+    std::process::exit(1);
 }
 
 #[derive(Clone, Default, Debug)]

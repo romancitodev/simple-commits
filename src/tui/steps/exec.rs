@@ -1,6 +1,10 @@
-use crate::{errors::AppError, reimpl::Pipeline};
-use cliclack::confirm;
+use crate::{
+    errors::AppError,
+    reimpl::Pipeline,
+    tui::{git, style},
+};
 use log::info;
+use nobubbles::inline::{confirm, task};
 
 /// Step 9: Execute/Preview Commit
 ///
@@ -35,36 +39,28 @@ pub fn execute_commit(pipeline: &mut Pipeline) -> Result<(), AppError> {
         .as_ref()
         .is_some_and(|cfg| cfg.skip_preview);
 
-    if skip_preview {
-        let (head, tail) = command.split_first().unwrap();
-        let _ = std::process::Command::new(head)
-            .args(tail)
-            .spawn()
-            .expect("The child failed for some reason")
-            .wait();
+    let execute = skip_preview
+        || confirm(style::subtitle("Do you want to execute this command?"))
+            .initial(true)
+            .ask()?;
 
-        info!(target: "tui::steps::execute", "commit executed without preview");
-    } else {
-        let execute = confirm("Do you want to execute this command?")
-            .initial_value(true)
-            .interact()?;
+    if execute {
+        let status = task(style::subtitle("Committing"), move |report| {
+            git::run(&command, report)
+        })??;
 
-        if execute {
-            let (head, tail) = command.split_first().unwrap();
-            let _ = std::process::Command::new(head)
-                .args(tail)
-                .spawn()
-                .expect("The child failed for some reason")
-                .wait();
-
-            info!(target: "tui::steps::execute", "commit executed");
+        if status.success() {
+            nobubbles::inline::log::success("commit created");
         } else {
-            cliclack::log::step("Commit preview")?;
-            cliclack::log::info(commit.0)?;
-            cliclack::log::info("")?;
-
-            info!(target: "tui::steps::execute", "commit preview shown");
+            nobubbles::inline::log::error(format!("git exited with {status}"));
         }
+
+        info!(target: "tui::steps::execute", "commit executed (status: {status})");
+    } else {
+        nobubbles::inline::log::step("Commit preview");
+        nobubbles::inline::log::block(&style::preview_card(&commit.0));
+
+        info!(target: "tui::steps::execute", "commit preview shown");
     }
 
     Ok(())
