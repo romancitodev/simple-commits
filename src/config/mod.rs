@@ -7,25 +7,25 @@ pub mod git;
 pub mod helpers;
 
 pub fn get_config() -> (cli::AppConfig, Option<Command>) {
-    let mut args = cli::CliConfig::parse();
-    let mut config = cli::AppConfig::default();
+  let mut args = cli::CliConfig::parse();
+  let mut config = cli::AppConfig::default();
 
-    if let Some(Command::Init(option)) = args.mode {
-        let path = helpers::create_config(option);
-        config.config = path;
+  if let Some(Command::Init(option)) = args.mode {
+    let path = helpers::create_config(option);
+    config.config = path;
+  } else {
+    let (global_path, local_path) = helpers::load_config(args.config, &mut config);
+
+    if let Some(local_path) = local_path {
+      config.config = local_path;
     } else {
-        let (global_path, local_path) = helpers::load_config(args.config, &mut config);
-
-        if let Some(local_path) = local_path {
-            config.config = local_path;
-        } else {
-            config.config = global_path;
-        }
-        config.merge(&mut args.sc_config);
+      config.config = global_path;
     }
-    (config, args.mode)
+    config.merge(&mut args.sc_config);
+  }
+  (config, args.mode)
 }
 
 pub fn start_logging() {
-    env_logger::builder().init();
+  env_logger::builder().init();
 }

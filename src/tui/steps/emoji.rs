@@ -7,33 +7,33 @@ use nobubbles::inline::select;
 /// Prompts the user to select an optional emoji for the commit.
 /// This step can be skipped if configured in the settings.
 pub fn select_emoji(pipeline: &mut Pipeline) -> Result<(), AppError> {
-    // Skip emoji selection if configured
-    if pipeline
-        .config
-        .git
-        .as_ref()
-        .is_some_and(|cfg| cfg.skip_emojis)
-    {
-        info!(target: "tui::steps::emoji", "skipped - emojis disabled in config");
-        return Ok(());
+  // Skip emoji selection if configured
+  if pipeline
+    .config
+    .git
+    .as_ref()
+    .is_some_and(|cfg| cfg.skip_emojis)
+  {
+    info!(target: "tui::steps::emoji", "skipped - emojis disabled in config");
+    return Ok(());
+  }
+
+  let mut emojis = select(style::subtitle("Select an emoji (optional)"))
+    .items(EMOJIS.map(|e| format!("{} {}", e.emoji, e.description)))
+    .max_rows(8);
+
+  for (idx, emoji) in EMOJIS.iter().enumerate() {
+    if !emoji.name.is_empty() {
+      emojis = emojis.note(idx, emoji.name);
     }
+  }
 
-    let mut emojis = select(style::subtitle("Select an emoji (optional)"))
-        .items(EMOJIS.map(|e| format!("{} {}", e.emoji, e.description)))
-        .max_rows(8);
+  let idx = emojis.strict().ask()?;
+  let selected = EMOJIS[idx].clone();
 
-    for (idx, emoji) in EMOJIS.iter().enumerate() {
-        if !emoji.name.is_empty() {
-            emojis = emojis.note(idx, emoji.name);
-        }
-    }
+  let emoji = (idx != 0).then_some(selected.emoji.to_owned());
+  pipeline.state.commit.set_emoji(emoji.clone());
 
-    let idx = emojis.strict().ask()?;
-    let selected = EMOJIS[idx].clone();
-
-    let emoji = (idx != 0).then_some(selected.emoji.to_owned());
-    pipeline.state.commit.set_emoji(emoji.clone());
-
-    info!(target: "tui::steps::emoji", "selected emoji: {emoji:?}");
-    Ok(())
+  info!(target: "tui::steps::emoji", "selected emoji: {emoji:?}");
+  Ok(())
 }

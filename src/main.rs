@@ -5,6 +5,6 @@ mod reimpl;
 mod tui;
 
 pub fn main() {
-    config::start_logging();
-    tui::init();
+  config::start_logging();
+  tui::init();
 }

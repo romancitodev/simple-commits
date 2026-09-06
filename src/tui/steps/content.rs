@@ -7,17 +7,17 @@ use nobubbles::inline::input;
 /// Prompts the user to enter optional footer notes for the commit.
 /// This can be used for referencing issues, co-authors, or other metadata.
 pub fn input_footer(pipeline: &mut Pipeline) -> Result<(), AppError> {
-    let footer: String = input(style::subtitle("Write some footer notes"))
-        .multiline()
-        .ask()?;
+  let footer: String = input(style::subtitle("Write some footer notes"))
+    .multiline()
+    .ask()?;
 
-    let footer = (!footer.is_empty()).then_some(footer.clone());
+  let footer = (!footer.is_empty()).then_some(footer.clone());
 
-    pipeline.state.commit.set_footer(footer.clone());
+  pipeline.state.commit.set_footer(footer.clone());
 
-    info!(
+  info!(
         target: "tui::steps::footer",
         "footer: {footer:?}");
 
-    Ok(())
+  Ok(())
 }

@@ -33,62 +33,62 @@ use crate::{config::cli::AppConfig, errors::AppError, tui::AppData};
 /// - Read and modify the configuration (`config`)
 /// - Return an error to halt the pipeline
 pub struct Pipeline {
-    /// The application state, primarily containing the commit being built.
-    pub state: AppData,
-    /// The application configuration, including user preferences and settings.
-    pub config: AppConfig,
+  /// The application state, primarily containing the commit being built.
+  pub state: AppData,
+  /// The application configuration, including user preferences and settings.
+  pub config: AppConfig,
 }
 
 impl Pipeline {
-    /// Creates a new pipeline with the given configuration.
-    ///
-    /// The state is initialized to its default value.
-    pub fn new(config: AppConfig) -> Self {
-        Self {
-            state: AppData::default(),
-            config,
-        }
+  /// Creates a new pipeline with the given configuration.
+  ///
+  /// The state is initialized to its default value.
+  pub fn new(config: AppConfig) -> Self {
+    Self {
+      state: AppData::default(),
+      config,
     }
+  }
 }
 
 impl Pipeline {
-    /// Chains a step onto the pipeline.
-    ///
-    /// The provided closure receives mutable access to the pipeline and can modify
-    /// both the state and configuration. If the closure returns an error, the pipeline
-    /// stops and the error is propagated.
-    ///
-    /// # Arguments
-    /// * `run` - A closure that performs the step's logic
-    ///
-    /// # Returns
-    /// * `Ok(Pipeline)` - The pipeline to continue chaining
-    /// * `Err(AppError)` - If the step encountered an error
-    ///
-    /// # Example
-    ///
-    /// ```rust,ignore
-    /// pipeline.then(|p| {
-    ///     p.state.commit.set_title(Some("feat: add feature".to_string()));
-    ///     Ok(())
-    /// })?
-    /// ```
-    pub fn then<F>(mut self, run: F) -> Result<Pipeline, AppError>
-    where
-        F: FnOnce(&mut Self) -> Result<(), AppError>,
-    {
-        run(&mut self)?;
-        Ok(self)
-    }
+  /// Chains a step onto the pipeline.
+  ///
+  /// The provided closure receives mutable access to the pipeline and can modify
+  /// both the state and configuration. If the closure returns an error, the pipeline
+  /// stops and the error is propagated.
+  ///
+  /// # Arguments
+  /// * `run` - A closure that performs the step's logic
+  ///
+  /// # Returns
+  /// * `Ok(Pipeline)` - The pipeline to continue chaining
+  /// * `Err(AppError)` - If the step encountered an error
+  ///
+  /// # Example
+  ///
+  /// ```rust,ignore
+  /// pipeline.then(|p| {
+  ///     p.state.commit.set_title(Some("feat: add feature".to_string()));
+  ///     Ok(())
+  /// })?
+  /// ```
+  pub fn then<F>(mut self, run: F) -> Result<Pipeline, AppError>
+  where
+    F: FnOnce(&mut Self) -> Result<(), AppError>,
+  {
+    run(&mut self)?;
+    Ok(self)
+  }
 
-    pub fn if_then<F, D>(mut self, cond: D, run: F) -> Result<Pipeline, AppError>
-    where
-        D: FnOnce(&mut Self) -> Result<bool, AppError>,
-        F: FnOnce(&mut Self) -> Result<(), AppError>,
-    {
-        if cond(&mut self)? {
-            run(&mut self)?;
-        }
-        Ok(self)
+  pub fn if_then<F, D>(mut self, cond: D, run: F) -> Result<Pipeline, AppError>
+  where
+    D: FnOnce(&mut Self) -> Result<bool, AppError>,
+    F: FnOnce(&mut Self) -> Result<(), AppError>,
+  {
+    if cond(&mut self)? {
+      run(&mut self)?;
     }
+    Ok(self)
+  }
 }

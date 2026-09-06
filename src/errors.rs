@@ -4,12 +4,12 @@ use crate::tui::BuildError;
 
 #[derive(Error, Debug)]
 pub enum AppError {
-    #[error("Error building the commit")]
-    BuildError(BuildError),
-    #[error("Error on I/O: {0:?}")]
-    IO(#[from] std::io::Error),
-    #[error("Error on Step: {0:?}")]
-    Step(String),
-    #[error("Error at nobbubbles level: {0:?}")]
-    Nobubbles(#[from] eyre::Report),
+  #[error("Error building the commit")]
+  BuildError(BuildError),
+  #[error("Error on I/O: {0:?}")]
+  IO(#[from] std::io::Error),
+  #[error("Error on Step: {0:?}")]
+  Step(String),
+  #[error("Error at nobbubbles level: {0:?}")]
+  Nobubbles(#[from] eyre::Report),
 }

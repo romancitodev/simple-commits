@@ -10,19 +10,19 @@ use nobubbles::inline::log::*;
 use nobubbles::inline::*;
 
 pub fn init(AppConfig { config, .. }: AppConfig) -> Result<(), AppError> {
-    let session = intro("Simple Commit")?;
+  let session = intro("Simple Commit")?;
 
-    step("Setting up configuration files");
+  step("Setting up configuration files");
 
-    info("");
-    info("Succesfully created.");
-    info(format!("Path: {}", config.display()));
-    info("");
+  info("");
+  info("Succesfully created.");
+  info(format!("Path: {}", config.display()));
+  info("");
 
-    outro(session).with(concat!(
-        "In case of issues, please report it to https://github.com/romancitodev/simple-commits\n",
-        "\u{2764}  Thanks for use this tool!",
-    ));
+  outro(session).with(concat!(
+    "In case of issues, please report it to https://github.com/romancitodev/simple-commits\n",
+    "\u{2764}  Thanks for use this tool!",
+  ));
 
-    Ok(())
+  Ok(())
 }
