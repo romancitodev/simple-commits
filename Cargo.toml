@@ -32,6 +32,8 @@ tokio = { version = "1", features = ["rt", "macros", "sync", "rt-multi-thread"] 
 toml = "0.8.8"
 nobubbles = { git = "https://github.com/romancitodev/nobubbles", branch = "feat/rimel", version = "0.1.0", features = ["gradient"] }
 eyre = "0.6.14"
+git2 = { version = "0.21.0", default-features = false }
+tempfile = "3.27.0"
 
 # The profile that 'cargo dist' will build with
 [profile.dist]

@@ -8,6 +8,8 @@ pub enum AppError {
   BuildError(BuildError),
   #[error("Error on I/O: {0:?}")]
   IO(#[from] std::io::Error),
+  #[error("Error on git: {0}")]
+  Git(#[from] git2::Error),
   #[error("Error on Step: {0:?}")]
   Step(String),
   #[error("Error at nobbubbles level: {0:?}")]
