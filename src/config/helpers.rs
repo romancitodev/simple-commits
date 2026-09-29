@@ -17,7 +17,8 @@ pub fn create_config(option: InitOptions) -> PathBuf {
       let path = BaseDirs::new().unwrap().config_dir().join("sc");
       let path = path.join("config.toml");
       if !path.exists() {
-        std::fs::create_dir_all(path.clone()).unwrap();
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::File::create(&path).unwrap();
       }
       path
     }
@@ -26,7 +27,8 @@ pub fn create_config(option: InitOptions) -> PathBuf {
         .expect("The current dir must exists")
         .join("sc.toml");
       if !path.exists() {
-        std::fs::create_dir_all(path.clone()).unwrap();
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::File::create(&path).unwrap();
       }
       path
     }
