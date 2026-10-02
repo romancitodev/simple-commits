@@ -70,6 +70,8 @@ commit_template = ["git", "commit", "-m", "{{message}}", "&&", "git", "push"]
 
 ## 💻 Usage
 
+![example](example.gif)
+
 Just run it:
 
 ```bash
